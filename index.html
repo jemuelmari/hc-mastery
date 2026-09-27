@@ -682,42 +682,67 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <h1>Hot &amp; Cold Assessment Mastery</h1>
     <p class="tag">Thermotherapy · Cryotherapy · Hot Sitz Bath</p>
 
-    <div class="form" id="authForm">
-      <div class="field">
-        <label>Full Name</label>
-        <input type="text" id="regName" placeholder="Juan Dela Cruz" autocomplete="name" />
+        <div class="form" id="authForm">
+      <div class="field-row">
+        <div class="field">
+          <label>First Name *</label>
+          <input type="text" id="regFirst" placeholder="Juan" autocomplete="given-name" />
+        </div>
+        <div class="field">
+          <label>Last Name *</label>
+          <input type="text" id="regLast" placeholder="Dela Cruz" autocomplete="family-name" />
+        </div>
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Student No.</label>
+          <label>Student Number *</label>
           <input type="text" id="regNo" placeholder="2024-00123" autocomplete="off" />
         </div>
         <div class="field">
-          <label>Section</label>
+          <label>Section *</label>
           <input type="text" id="regSection" placeholder="BSN 2-A" autocomplete="off" />
         </div>
       </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="regEmail" placeholder="juan@example.com" autocomplete="email" />
-      </div>
       <div class="field-row">
         <div class="field">
-          <label>School Year</label>
-          <input type="text" id="regSY" placeholder="2025-2026" />
+          <label>School Year *</label>
+          <select id="regSY">
+            <option value="2024-2025">2024-2025</option>
+            <option value="2025-2026" selected>2025-2026</option>
+            <option value="2026-2027">2026-2027</option>
+          </select>
         </div>
         <div class="field">
-          <label>Semester</label>
+          <label>Semester *</label>
           <select id="regSem">
-            <option value="1st Semester">1st Semester</option>
-            <option value="2nd Semester" selected>2nd Semester</option>
+            <option value="1st Semester" selected>1st Semester</option>
+            <option value="2nd Semester">2nd Semester</option>
             <option value="Summer">Summer</option>
           </select>
         </div>
       </div>
+      <div class="field">
+        <label>Group Number *</label>
+        <select id="regGroup">
+          <option value="">— Select your group —</option>
+          <option value="Group 1">Group 1</option>
+          <option value="Group 2">Group 2</option>
+          <option value="Group 3">Group 3</option>
+          <option value="Group 4">Group 4</option>
+          <option value="Group 5">Group 5</option>
+          <option value="Group 6">Group 6</option>
+          <option value="Group 7">Group 7</option>
+          <option value="Group 8">Group 8</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>TSU Email *</label>
+        <input type="email" id="regEmail" placeholder="juan.delacruz@tsu.edu.ph" autocomplete="email" />
+        <p style="font-size:11.5px;color:var(--muted);margin-top:6px;">Use your official TSU email address</p>
+      </div>
       <button class="btn primary block ripple" id="btnRegister" style="margin-top:6px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-        Create Profile & Start
+        Register &amp; Start Learning
       </button>
       <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:10px;">
         Your data is stored on this device and auto-submitted to your instructor.
