@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0E1116"/>
+      <stop offset="100%" stop-color="#161B22"/>
+    </linearGradient>
+    <linearGradient id="hot" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#FF5A3C"/>
+      <stop offset="100%" stop-color="#FF8A65"/>
+    </linearGradient>
+    <linearGradient id="cold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#67E8F9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- HOT half (left) — flame -->
+  <path d="M128 380
+           C 80 340, 96 268, 148 220
+           C 148 260, 176 268, 176 300
+           C 176 340, 128 348, 128 380 Z"
+        fill="url(#hot)"/>
+  <path d="M170 396
+           C 140 372, 152 330, 184 300
+           C 184 328, 204 334, 204 356
+           C 204 380, 180 388, 170 396 Z"
+        fill="url(#hot)" opacity="0.75"/>
+
+  <!-- COLD half (right) — snowflake -->
+  <g stroke="url(#cold)" stroke-width="14" stroke-linecap="round" fill="none"
+     transform="translate(340,300)">
+    <line x1="0" y1="-70" x2="0" y2="70"/>
+    <line x1="-60.6" y1="-35" x2="60.6" y2="35"/>
+    <line x1="-60.6" y1="35" x2="60.6" y2="-35"/>
+    <path d="M0 -70 l-16 -16 M0 -70 l16 -16"/>
+    <path d="M0 70 l-16 16 M0 70 l16 16"/>
+    <path d="M60.6 35 l22 -6 M60.6 35 l6 22"/>
+    <path d="M-60.6 -35 l-22 6 M-60.6 -35 l-6 -22"/>
+    <path d="M60.6 -35 l22 6 M60.6 -35 l6 -22"/>
+    <path d="M-60.6 35 l-22 -6 M-60.6 35 l-6 22"/>
+  </g>
+
+  <!-- Divider line (thermal gradient) -->
+  <line x1="256" y1="120" x2="256" y2="392"
+        stroke="url(#hot)" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+</svg>
