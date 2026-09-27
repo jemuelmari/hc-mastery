@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0E1116" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Hot &amp; Cold Assessment Mastery</title>
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+:root{
+  --bg:#0E1116;
+  --surface:#161B22;
+  --surface-2:#1C232C;
+  --glass:rgba(255,255,255,0.06);
+  --glass-strong:rgba(255,255,255,0.10);
+  --border:rgba(255,255,255,0.10);
+  --border-strong:rgba(255,255,255,0.18);
+
+  --hot:#FF5A3C;
+  --hot-soft:#FF8A65;
+  --hot-glow:rgba(255,90,60,0.45);
+
+  --cold:#22D3EE;
+  --cold-soft:#67E8F9;
+  --cold-glow:rgba(34,211,238,0.45);
+
+  --grad:linear-gradient(135deg,#FF5A3C 0%,#22D3EE 100%);
+  --grad-soft:linear-gradient(135deg,rgba(255,90,60,0.18) 0%,rgba(34,211,238,0.18) 100%);
+
+  --ok:#34D399;
+  --warn:#FBBF24;
+  --danger:#F87171;
+
+  --text:#E6EDF3;
+  --muted:#8B949E;
+  --muted-2:#6E7681;
+
+  --radius-sm:10px;
+  --radius:14px;
+  --radius-lg:20px;
+  --radius-xl:26px;
+  --radius-pill:999px;
+
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.35);
+  --shadow:0 10px 30px rgba(0,0,0,0.45);
+  --shadow-lg:0 20px 60px rgba(0,0,0,0.55);
+
+  --sidebar-w:270px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:
+    radial-gradient(1200px 800px at 10% -10%, rgba(255,90,60,0.10), transparent 60%),
+    radial-gradient(1200px 800px at 110% 110%, rgba(34,211,238,0.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+/* ============ LAYOUT ============ */
+.app{display:flex;min-height:100vh;}
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:rgba(22,27,34,0.85);
+  border-right:1px solid var(--border);
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+  padding:22px 16px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  display:flex;flex-direction:column;gap:6px;
+  z-index:50;
+}
+.sidebar::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--grad);
+  box-shadow:0 0 22px var(--hot-glow), 0 0 22px var(--cold-glow);
+}
+
+.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.brand-badge{
+  width:44px;height:44px;border-radius:13px;
+  background:var(--grad);
+  display:grid;place-items:center;flex-shrink:0;
+  box-shadow:0 8px 22px rgba(255,90,60,0.28), 0 8px 22px rgba(34,211,238,0.22);
+}
+.brand-badge svg{width:24px;height:24px;color:#fff;}
+.brand-txt h1{
+  font-size:14.5px;font-weight:800;letter-spacing:-.01em;line-height:1.15;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand-txt p{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px;}
+
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 13px;border-radius:var(--radius-sm);
+  color:var(--muted);font-size:14px;font-weight:600;
+  transition:all .2s var(--ease);
+  position:relative;overflow:hidden;
+  text-align:left;width:100%;
+}
+.nav-item svg{width:18px;height:18px;flex-shrink:0;}
+.nav-item:hover{background:var(--glass);color:var(--text);}
+.nav-item.active{
+  background:var(--grad-soft);color:var(--text);
+  border:1px solid var(--border-strong);
+}
+.nav-item.active::before{
+  content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+  background:var(--grad);border-radius:3px;
+}
+.nav-item .badge{
+  margin-left:auto;font-size:10.5px;font-weight:700;
+  padding:2px 8px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,0.08);color:var(--muted);
+}
+.nav-item.active .badge{background:rgba(34,211,238,0.15);color:var(--cold);}
+.nav-sep{height:1px;background:var(--border);margin:10px 6px;}
+.nav-label{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);padding:8px 12px 4px;}
+
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+.side-user{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:var(--radius-sm);background:var(--glass);
+  border:1px solid var(--border);
+}
+.side-user .av{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:var(--grad);display:grid;place-items:center;
+  font-size:12px;font-weight:800;color:#fff;
+}
+.side-user .info{min-width:0;flex:1;}
+.side-user .nm{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.side-user .sn{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ============ MAIN ============ */
+.main{flex:1;min-width:0;padding:24px 26px 90px;max-width:1400px;}
+
+.mobile-top{display:none;}
+
+/* ============ VIEWS ============ */
+.view{display:none;animation:fadeUp .4s var(--ease) both;}
+.view.active{display:block;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============ HEADINGS ============ */
+.page-head{margin-bottom:22px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.page-head h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.02em;line-height:1.15;}
+.page-head p{color:var(--muted);font-size:14px;margin-top:4px;}
+
+/* ============ CARDS ============ */
+.card{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:22px;
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:var(--shadow-sm);
+  margin-bottom:16px;
+}
+.card.pad-lg{padding:28px;}
+.card h3{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;}
+.card .sub{color:var(--muted);font-size:13px;margin-bottom:16px;}
+
+/* ============ HERO DASH ============ */
+.dash-hero{
+  position:relative;border-radius:var(--radius-xl);
+  padding:30px 28px;margin-bottom:20px;
+  background:var(--grad-soft);
+  border:1px solid var(--border);
+  overflow:hidden;
+  display:flex;align-items:center;gap:26px;flex-wrap:wrap;
+}
+.dash-hero::before,
+.dash-hero::after{
+  content:"";position:absolute;width:320px;height:320px;border-radius:50%;
+  filter:blur(50px);opacity:.55;pointer-events:none;
+}
+.dash-hero::before{background:radial-gradient(circle,var(--hot-glow),transparent 65%);top:-120px;right:-80px;}
+.dash-hero::after{background:radial-gradient(circle,var(--cold-glow),transparent 65%);bottom:-140px;left:-90px;}
+.dash-hero-inner{position:relative;z-index:1;flex:1;min-width:220px;}
+.dash-hero h2{font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.15;}
+.dash-hero .greet{
+  font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--cold);margin-bottom:6px;
+}
+.dash-hero p{color:var(--muted);font-size:14px;margin-top:8px;max-width:520px;}
+.dash-hero .ring-wrap{position:relative;z-index:1;flex-shrink:0;}
+
+/* ============ PROGRESS RING ============ */
+.ring{
+  --size:150px;
+  --stroke:12;
+  width:var(--size);height:var(--size);
+  position:relative;flex-shrink:0;
+}
+.ring svg{transform:rotate(-90deg);width:100%;height:100%;}
+.ring .track{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:var(--stroke);}
+.ring .fill{
+  fill:none;stroke:url(#ringGrad);stroke-width:var(--stroke);
+  stroke-linecap:round;
+  stroke-dasharray:var(--circ);
+  stroke-dashoffset:var(--circ);
+  transition:stroke-dashoffset 1.2s var(--ease);
+}
+.ring .ring-label{
+  position:absolute;inset:0;display:grid;place-items:center;flex-direction:column;
+  text-align:center;pointer-events:none;
+}
+.ring .ring-label .pct{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+.ring .ring-label .txt{font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+
+/* ============ STAT GRID ============ */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
+.stat{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:18px 20px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  position:relative;overflow:hidden;
+}
+.stat::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad);opacity:.85;
+}
+.stat .lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.stat .val{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;}
+.stat .hint{font-size:12px;color:var(--muted-2);margin-top:2px;}
+
+/* ============ BUTTON ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:12px 20px;border-radius:var(--radius-pill);
+  background:var(--glass);border:1px solid var(--border);
+  color:var(--text);font-weight:600;font-size:14px;
+  transition:transform .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease);
+  position:relative;overflow:hidden;white-space:nowrap;
+}
+.btn:hover{background:var(--glass-strong);border-color:var(--border-strong);transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn svg{width:16px;height:16px;flex-shrink:0;}
+.btn.primary{
+  background:var(--grad);border:none;color:#fff;
+  box-shadow:0 8px 22px rgba(255,90,60,0.28), 0 8px 22px rgba(34,211,238,0.22);
+}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.block{width:100%;}
+.btn.sm{padding:9px 15px;font-size:13px;}
+.btn.ghost{background:transparent;border-color:transparent;}
+.btn.ghost:hover{background:var(--glass);}
+.btn.danger{color:var(--danger);border-color:rgba(248,113,113,0.35);}
+.btn.danger:hover{background:rgba(248,113,113,0.10);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* ripple */
+.ripple{position:relative;overflow:hidden;}
+.ripple > span.rp{
+  position:absolute;border-radius:50%;
+  transform:scale(0);opacity:.5;pointer-events:none;
+  background:rgba(255,255,255,0.55);
+  animation:ripple .6s ease-out;
+}
+@keyframes ripple{to{transform:scale(4);opacity:0;}}
+
+/* ============ UNIT CARDS ============ */
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.unit{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px;
+  cursor:pointer;transition:all .25s var(--ease);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:12px;
+}
+.unit:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:var(--shadow);}
+.unit::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--grad);opacity:.85;
+}
+.unit.hot::before{background:linear-gradient(180deg,var(--hot),var(--hot-soft));}
+.unit.cold::before{background:linear-gradient(180deg,var(--cold),var(--cold-soft));}
+.unit .unit-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.unit .unit-tag{
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:var(--radius-pill);
+}
+.unit.hot .unit-tag{color:var(--hot);background:rgba(255,90,60,0.12);border:1px solid rgba(255,90,60,0.25);}
+.unit.cold .unit-tag{color:var(--cold);background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.25);}
+.unit h4{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.3;}
+.unit p{font-size:13px;color:var(--muted);line-height:1.5;flex:1;}
+.unit .unit-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:6px;border-top:1px solid var(--border);}
+.unit .unit-progress{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:600;}
+.unit .mastery-pill{
+  font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--radius-pill);
+  background:rgba(52,211,153,0.12);color:var(--ok);border:1px solid rgba(52,211,153,0.28);
+}
+.unit .mastery-pill.locked{background:rgba(255,255,255,0.05);color:var(--muted);border-color:var(--border);}
+
+/* ============ QUIZ ============ */
+.quiz-wrap{max-width:820px;margin:0 auto;}
+.quiz-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.quiz-head h2{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.quiz-head p{color:var(--muted);font-size:13.5px;margin-top:2px;}
+.quiz-progress{height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden;margin-bottom:22px;}
+.quiz-progress .fill{height:100%;background:var(--grad);width:0;transition:width .4s var(--ease);}
+
+.question{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;
+}
+.question .q-num{
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cold);margin-bottom:8px;
+}
+.question h4{font-size:16px;font-weight:600;line-height:1.5;margin-bottom:16px;}
+.options{display:grid;gap:10px;}
+.opt{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 16px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  cursor:pointer;transition:all .2s var(--ease);
+  font-size:14px;color:var(--text);text-align:left;width:100%;
+  line-height:1.45;
+}
+.opt:hover{background:var(--glass-strong);border-color:var(--border-strong);}
+.opt .letter{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:11.5px;font-weight:800;
+  background:rgba(255,255,255,0.06);color:var(--muted);
+  transition:all .2s var(--ease);
+}
+.opt.selected{border-color:var(--cold);background:rgba(34,211,238,0.08);}
+.opt.selected .letter{background:var(--cold);color:#0E1116;}
+.opt.correct{border-color:var(--ok);background:rgba(52,211,153,0.10);}
+.opt.correct .letter{background:var(--ok);color:#0E1116;}
+.opt.wrong{border-color:var(--danger);background:rgba(248,113,113,0.10);}
+.opt.wrong .letter{background:var(--danger);color:#fff;}
+
+.q-actions{display:flex;gap:10px;justify-content:space-between;margin-top:16px;flex-wrap:wrap;}
+
+/* ============ RESULT BANNER ============ */
+.result{
+  text-align:center;padding:40px 28px;
+  background:var(--grad-soft);border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+}
+.result .score{font-size:56px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.result .score.pass{background:linear-gradient(135deg,var(--ok),var(--cold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.result .score.fail{background:linear-gradient(135deg,var(--warn),var(--hot));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.result h3{font-size:22px;font-weight:800;margin:12px 0 6px;}
+.result p{color:var(--muted);font-size:14px;max-width:420px;margin:0 auto 20px;}
+.result .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+/* ============ GAMES ============ */
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.game{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:22px;cursor:pointer;
+  transition:all .25s var(--ease);position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:10px;
+}
+.game:hover{transform:translateY(-3px);border-color:var(--border-strong);}
+.game .ico{
+  width:48px;height:48px;border-radius:14px;flex-shrink:0;
+  display:grid;place-items:center;margin-bottom:6px;
+}
+.game.hot .ico{background:rgba(255,90,60,0.15);color:var(--hot);}
+.game.cold .ico{background:rgba(34,211,238,0.15);color:var(--cold);}
+.game .ico svg{width:24px;height:24px;}
+.game h4{font-size:16px;font-weight:700;letter-spacing:-.01em;}
+.game p{font-size:13px;color:var(--muted);flex:1;}
+.game .best{
+  font-size:11.5px;font-weight:700;color:var(--muted);
+  display:flex;align-items:center;gap:6px;padding-top:10px;border-top:1px solid var(--border);
+}
+.game .best strong{color:var(--cold);}
+
+/* game play view */
+.play-wrap{max-width:720px;margin:0 auto;}
+.play-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.play-head .stat-chip{
+  font-size:12px;font-weight:700;padding:6px 14px;border-radius:var(--radius-pill);
+  background:var(--glass);border:1px solid var(--border);color:var(--muted);
+}
+.play-head .stat-chip strong{color:var(--text);}
+.play-card{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-xl);padding:34px 28px;text-align:center;
+  min-height:340px;display:flex;flex-direction:column;justify-content:center;gap:20px;
+}
+.play-card .prompt{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.4;}
+
+/* sort game */
+.sort-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:20px 0;}
+.sort-box{
+  min-width:140px;padding:14px;border-radius:var(--radius);
+  border:1.5px dashed var(--border-strong);
+  background:rgba(255,255,255,0.03);color:var(--muted);font-weight:700;
+  transition:all .2s var(--ease);
+}
+.sort-box.hot{border-color:rgba(255,90,60,0.45);color:var(--hot);}
+.sort-box.cold{border-color:rgba(34,211,238,0.45);color:var(--cold);}
+.sort-box.over{background:var(--grad-soft);border-style:solid;}
+
+.sort-item{
+  display:inline-block;padding:10px 16px;border-radius:var(--radius-pill);
+  background:var(--grad);color:#fff;font-weight:700;font-size:13.5px;
+  cursor:grab;user-select:none;margin:5px;
+  box-shadow:0 8px 20px rgba(255,90,60,0.25);
+  transition:transform .15s var(--ease);
+}
+.sort-item:active{cursor:grabbing;transform:scale(.98);}
+.sort-item.picked{outline:2px solid var(--cold);outline-offset:3px;}
+.sort-item.done{opacity:.5;pointer-events:none;}
+
+/* timer bar */
+.timer-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:18px;}
+.timer-bar .fill{height:100%;background:var(--grad);transition:width .3s linear;}
+
+/* ============ EXAM ============ */
+.exam-intro{max-width:680px;margin:0 auto;text-align:center;}
+.exam-intro .big-badge{
+  width:88px;height:88px;border-radius:24px;background:var(--grad);
+  display:grid;place-items:center;margin:0 auto 20px;
+  box-shadow:0 20px 50px rgba(255,90,60,0.30), 0 20px 50px rgba(34,211,238,0.25);
+}
+.exam-intro .big-badge svg{width:44px;height:44px;color:#fff;}
+.exam-intro h2{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px;}
+.exam-intro p{color:var(--muted);font-size:14.5px;margin-bottom:20px;}
+.exam-rules{
+  text-align:left;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 22px;margin-bottom:22px;
+}
+.exam-rules li{list-style:none;display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.exam-rules li::before{content:"•";color:var(--cold);font-weight:900;flex-shrink:0;}
+
+/* ============ CERTIFICATE ============ */
+.cert{
+  background:linear-gradient(135deg,rgba(255,90,60,0.10),rgba(34,211,238,0.10));
+  border:2px solid transparent;
+  background-clip:padding-box;
+  border-radius:var(--radius-xl);padding:44px 36px;text-align:center;
+  position:relative;overflow:hidden;
+  margin-bottom:16px;
+}
+.cert::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  padding:2px;background:var(--grad);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  pointer-events:none;
+}
+.cert .seal{
+  width:80px;height:80px;border-radius:50%;background:var(--grad);
+  display:grid;place-items:center;margin:0 auto 18px;
+  box-shadow:0 14px 40px rgba(255,90,60,0.35), 0 14px 40px rgba(34,211,238,0.28);
+}
+.cert .seal svg{width:40px;height:40px;color:#fff;}
+.cert .label{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--cold);}
+.cert h2{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:12px 0;line-height:1.15;}
+.cert .name{
+  font-size:26px;font-weight:800;letter-spacing:-.01em;margin:22px 0 6px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.cert .meta{font-size:13px;color:var(--muted);}
+.cert .scores{
+  display:flex;justify-content:center;gap:24px;flex-wrap:wrap;
+  margin:24px 0;padding:18px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.cert .sc{text-align:center;min-width:110px;}
+.cert .sc .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+.cert .sc .l{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.cert .sig{margin-top:26px;}
+.cert .sig .line{width:240px;height:1px;background:var(--border-strong);margin:0 auto 8px;}
+.cert .sig .who{font-size:13px;font-weight:700;}
+.cert .sig .role{font-size:11.5px;color:var(--muted);}
+
+/* ============ PROFILE / FORM ============ */
+.form{display:grid;gap:14px;}
+.field label{
+  display:block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+}
+.field input,.field select,.field textarea{
+  width:100%;padding:13px 15px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);
+  font-family:inherit;font-size:14px;font-weight:500;
+  transition:border-color .15s var(--ease),background .15s var(--ease);
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--cold);background:rgba(34,211,238,0.04);
+  box-shadow:0 0 0 3px rgba(34,211,238,0.14);
+}
+.field textarea{min-height:120px;resize:vertical;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ============ MODAL ============ */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+  opacity:0;transition:opacity .25s var(--ease);
+}
+.modal-backdrop.open{display:flex;opacity:1;}
+.modal{
+  background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:var(--radius-lg);max-width:480px;width:100%;
+  max-height:88vh;overflow-y:auto;padding:26px;
+  box-shadow:0 30px 80px rgba(0,0,0,0.65);
+  transform:translateY(14px) scale(.98);transition:transform .3s var(--ease);
+}
+.modal-backdrop.open .modal{transform:translateY(0) scale(1);}
+.modal h3{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:6px;}
+.modal p{color:var(--muted);font-size:13.5px;margin-bottom:18px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px;}
+
+/* ============ TOAST ============ */
+#toastWrap{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+  z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;
+  pointer-events:none;padding:0 16px;
+}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 20px;border-radius:var(--radius-pill);
+  background:rgba(22,27,34,0.95);border:1px solid var(--border-strong);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 12px 34px rgba(0,0,0,0.55);
+  font-size:13.5px;font-weight:600;color:var(--text);
+  animation:toastIn .3s var(--ease);pointer-events:auto;max-width:90vw;
+}
+.toast.out{animation:toastOut .3s var(--ease) forwards;}
+.toast .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast.ok .dot{background:var(--ok);box-shadow:0 0 10px rgba(52,211,153,0.6);}
+.toast.err .dot{background:var(--danger);box-shadow:0 0 10px rgba(248,113,113,0.6);}
+.toast.info .dot{background:var(--cold);box-shadow:0 0 10px rgba(34,211,238,0.6);}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes toastOut{to{opacity:0;transform:translateY(20px) scale(.95);}}
+
+/* ============ AUTH ============ */
+.auth-screen{
+  min-height:100vh;display:grid;place-items:center;padding:24px;
+}
+.auth-card{
+  max-width:440px;width:100%;
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-xl);padding:34px 30px;
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+  box-shadow:var(--shadow-lg);
+  position:relative;overflow:hidden;
+  animation:fadeUp .6s var(--ease) both;
+}
+.auth-card::before{
+  content:"";position:absolute;top:-100px;right:-100px;width:300px;height:300px;
+  border-radius:50%;background:radial-gradient(circle,var(--hot-glow),transparent 65%);
+  filter:blur(40px);opacity:.55;pointer-events:none;
+}
+.auth-card::after{
+  content:"";position:absolute;bottom:-100px;left:-100px;width:300px;height:300px;
+  border-radius:50%;background:radial-gradient(circle,var(--cold-glow),transparent 65%);
+  filter:blur(40px);opacity:.55;pointer-events:none;
+}
+.auth-card > *{position:relative;z-index:1;}
+.auth-logo{
+  width:72px;height:72px;border-radius:20px;background:var(--grad);
+  display:grid;place-items:center;margin:0 auto 16px;
+  box-shadow:0 14px 40px rgba(255,90,60,0.35), 0 14px 40px rgba(34,211,238,0.28);
+}
+.auth-logo svg{width:38px;height:38px;color:#fff;}
+.auth-card h1{
+  font-size:22px;font-weight:800;letter-spacing:-.02em;text-align:center;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.auth-card .tag{text-align:center;color:var(--muted);font-size:13px;margin:6px 0 24px;}
+
+/* ============ MISC ============ */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);
+}
+.pill.hot{color:var(--hot);border-color:rgba(255,90,60,0.35);background:rgba(255,90,60,0.08);}
+.pill.cold{color:var(--cold);border-color:rgba(34,211,238,0.35);background:rgba(34,211,238,0.08);}
+.pill.ok{color:var(--ok);border-color:rgba(52,211,153,0.35);background:rgba(52,211,153,0.08);}
+.pill.warn{color:var(--warn);border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.08);}
+
+.empty-state{
+  text-align:center;padding:50px 24px;color:var(--muted);
+}
+.empty-state svg{width:56px;height:56px;opacity:.25;margin-bottom:14px;}
+.empty-state p{font-size:14px;}
+
+.hidden{display:none !important;}
+
+/* ============ MOBILE ============ */
+@media (max-width:900px){
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;
+    transform:translateX(-100%);
+    transition:transform .3s var(--ease);
+    z-index:100;width:280px;
+    box-shadow:0 0 60px rgba(0,0,0,0.6);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .main{padding:16px 16px 100px;}
+  .mobile-top{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:6px 0 18px;
+  }
+  .burger{
+    width:44px;height:44px;border-radius:12px;
+    background:var(--glass);border:1px solid var(--border);
+    display:grid;place-items:center;
+  }
+  .burger svg{width:20px;height:20px;}
+  .mobile-brand{
+    display:flex;align-items:center;gap:10px;
+    font-size:14.5px;font-weight:800;letter-spacing:-.01em;
+  }
+  .mobile-brand .bd{
+    width:32px;height:32px;border-radius:9px;background:var(--grad);
+    display:grid;place-items:center;
+  }
+  .mobile-brand .bd svg{width:18px;height:18px;color:#fff;}
+  .backdrop{
+    position:fixed;inset:0;z-index:90;
+    background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);
+    display:none;
+  }
+  .backdrop.open{display:block;}
+  .field-row{grid-template-columns:1fr;}
+  .dash-hero{padding:24px 22px;gap:20px;}
+  .ring{--size:120px;}
+  .ring .ring-label .pct{font-size:22px;}
+  .cert{padding:30px 22px;}
+  .cert h2{font-size:24px;}
+  .cert .name{font-size:22px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SVG defs for gradient strokes
+============================================================ -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF5A3C"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- ============================================================
+     AUTH SCREEN
+============================================================ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20"/><path d="M8 5c0 2 4 2 4 4s-4 2-4 4 4 2 4 4"/>
+      </svg>
+    </div>
+    <h1>Hot &amp; Cold Assessment Mastery</h1>
+    <p class="tag">Thermotherapy · Cryotherapy · Hot Sitz Bath</p>
+
+    <div class="form" id="authForm">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Juan Dela Cruz" autocomplete="name" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Student No.</label>
+          <input type="text" id="regNo" placeholder="2024-00123" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Section</label>
+          <input type="text" id="regSection" placeholder="BSN 2-A" autocomplete="off" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="juan@example.com" autocomplete="email" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>School Year</label>
+          <input type="text" id="regSY" placeholder="2025-2026" />
+        </div>
+        <div class="field">
+          <label>Semester</label>
+          <select id="regSem">
+            <option value="1st Semester">1st Semester</option>
+            <option value="2nd Semester" selected>2nd Semester</option>
+            <option value="Summer">Summer</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn primary block ripple" id="btnRegister" style="margin-top:6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Create Profile & Start
+      </button>
+      <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:10px;">
+        Your data is stored on this device and auto-submitted to your instructor.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP
+============================================================ -->
+<div class="app hidden" id="appRoot">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20"/><path d="M8 5c0 2 4 2 4 4s-4 2-4 4 4 2 4 4"/>
+        </svg>
+      </div>
+      <div class="brand-txt">
+        <h1>Hot &amp; Cold Mastery</h1>
+        <p>NCM 104 Lab · v<span id="sideVer">3.1.0</span></p>
+      </div>
+    </div>
+
+    <button class="nav-item active" data-view="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" data-view="units">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Learning Units
+      <span class="badge" id="navUnitsBadge">0/8</span>
+    </button>
+    <button class="nav-item" data-view="games">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="16" cy="12" r="1.5"/></svg>
+      Mastery Games
+    </button>
+    <button class="nav-item" data-view="exam">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Capstone Exam
+    </button>
+    <button class="nav-item" data-view="certificate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>
+      Certificate
+    </button>
+
+    <div class="nav-sep"></div>
+    <div class="nav-label">Account</div>
+
+    <button class="nav-item" data-view="profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Edit Profile
+    </button>
+    <button class="nav-item" data-view="feedback">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Send Feedback
+    </button>
+    <button class="nav-item" id="btnQuickSubmit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      Quick Submit
+    </button>
+    <button class="nav-item" id="btnLogout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+
+    <div class="side-foot">
+      <div class="side-user">
+        <div class="av" id="userAv">--</div>
+        <div class="info">
+          <div class="nm" id="userNm">Student</div>
+          <div class="sn" id="userSn">—</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div class="mobile-top">
+      <button class="burger" id="btnBurger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="mobile-brand">
+        <div class="bd">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M8 5c0 2 4 2 4 4s-4 2-4 4 4 2 4 4"/></svg>
+        </div>
+        Hot &amp; Cold
+      </div>
+      <div style="width:44px;"></div>
+    </div>
+
+    <!-- ========== HOME ========== -->
+    <section class="view active" id="view-home">
+      <div class="dash-hero">
+        <div class="dash-hero-inner">
+          <div class="greet" id="greetLine">Welcome back</div>
+          <h2 id="dashName">Student</h2>
+          <p>Continue your mastery journey through thermotherapy, cryotherapy, and hot sitz bath. Complete all units, ace the games, and pass the capstone exam.</p>
+        </div>
+        <div class="ring-wrap">
+          <div class="ring" id="dashRing" style="--circ:0;">
+            <svg viewBox="0 0 150 150">
+              <circle class="track" cx="75" cy="75" r="66"/>
+              <circle class="fill" cx="75" cy="75" r="66"/>
+            </svg>
+            <div class="ring-label">
+              <div>
+                <div class="pct" id="dashRingPct">0%</div>
+                <div class="txt">Overall</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="lbl">Units Mastered</div>
+          <div class="val" id="statUnits">0 / 8</div>
+          <div class="hint">Pass ≥ 90%</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Quiz Average</div>
+          <div class="val" id="statAvg">0%</div>
+          <div class="hint">Across all units</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Games Best</div>
+          <div class="val" id="statGames">0%</div>
+          <div class="hint">Highest score</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Capstone Exam</div>
+          <div class="val" id="statExam">—</div>
+          <div class="hint" id="statExamHint">Not yet taken</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Continue Learning</h3>
+        <p class="sub">Jump back in — your progress is saved locally and auto-submitted.</p>
+        <div id="homeNextUnit"></div>
+      </div>
+
+      <div class="card">
+        <h3>Clinical Pearls</h3>
+        <p class="sub">Quick refreshers for the skills lab.</p>
+        <ul style="list-style:none;display:grid;gap:10px;">
+          <li class="pill hot" style="justify-content:flex-start;padding:10px 14px;font-size:12.5px;line-height:1.5;text-transform:none;letter-spacing:0;font-weight:500;">🔥 Heat → vasodilation · chronic pain · muscle spasm · 15–20 min</li>
+          <li class="pill cold" style="justify-content:flex-start;padding:10px 14px;font-size:12.5px;line-height:1.5;text-transform:none;letter-spacing:0;font-weight:500;">❄️ Cold → vasoconstriction · acute injury · edema · 15–20 min</li>
+          <li class="pill" style="justify-content:flex-start;padding:10px 14px;font-size:12.5px;line-height:1.5;text-transform:none;letter-spacing:0;font-weight:500;">💧 Sitz bath → moist heat · 40–43 °C · postpartum &amp; anorectal care</li>
+          <li class="pill" style="justify-content:flex-start;padding:10px 14px;font-size:12.5px;line-height:1.5;text-transform:none;letter-spacing:0;font-weight:500;">⚠️ Always assess skin, sensation, and circulation before applying.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========== UNITS ========== -->
+    <section class="view" id="view-units">
+      <div class="page-head">
+        <div>
+          <h2>Learning Units</h2>
+          <p>Score at least 90% on each quiz to master the unit.</p>
+        </div>
+        <span class="pill cold" id="unitsCountPill">0 / 8 mastered</span>
+      </div>
+      <div class="unit-grid" id="unitGrid"></div>
+    </section>
+
+    <!-- ========== QUIZ ========== -->
+    <section class="view" id="view-quiz">
+      <div class="quiz-wrap">
+        <div class="quiz-head">
+          <div>
+            <h2 id="quizTitle">Unit Quiz</h2>
+            <p id="quizSubtitle">Answer all items. You may retake until you master it.</p>
+          </div>
+          <button class="btn sm ripple" id="btnQuizExit">Exit</button>
+        </div>
+        <div class="quiz-progress"><div class="fill" id="quizProgressFill"></div></div>
+        <div id="quizBody"></div>
+      </div>
+    </section>
+
+    <!-- ========== GAMES ========== -->
+    <section class="view" id="view-games">
+      <div class="page-head">
+        <div>
+          <h2>Mastery Games</h2>
+          <p>Sharpen your clinical judgment. Best scores count toward your grade.</p>
+        </div>
+      </div>
+      <div class="game-grid" id="gameGrid"></div>
+    </section>
+
+    <!-- ========== GAME PLAY ========== -->
+    <section class="view" id="view-play">
+      <div class="play-wrap">
+        <div class="play-head">
+          <button class="btn sm ripple" id="btnPlayExit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="stat-chip">Score: <strong id="playScore">0</strong></span>
+            <span class="stat-chip">Round: <strong id="playRound">1</strong>/<strong id="playRounds">10</strong></span>
+          </div>
+        </div>
+        <div class="timer-bar"><div class="fill" id="playTimerFill" style="width:100%;"></div></div>
+        <div class="play-card" id="playBody"></div>
+      </div>
+    </section>
+
+    <!-- ========== EXAM ========== -->
+    <section class="view" id="view-exam">
+      <div id="examIntro" class="exam-intro">
+        <div class="big-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h2>Capstone Exam</h2>
+        <p>30 items, PNLE-aligned, one attempt only. Passing score: 75%.</p>
+        <ul class="exam-rules">
+          <li>30 multiple-choice items covering all learning units.</li>
+          <li>You have <strong>one attempt</strong> only — take it seriously.</li>
+          <li>No time limit, but pace yourself (~45 min suggested).</li>
+          <li>Your score is auto-submitted to your instructor.</li>
+          <li>A score of <strong>75% or higher</strong> earns your Certificate of Completion.</li>
+        </ul>
+        <button class="btn primary ripple" id="btnStartExam">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+          Start Capstone Exam
+        </button>
+      </div>
+
+      <div id="examPlay" class="quiz-wrap hidden">
+        <div class="quiz-head">
+          <div>
+            <h2>Capstone Exam</h2>
+            <p id="examProgressTxt">Question 1 of 30</p>
+          </div>
+          <span class="pill warn" id="examStatusPill">In Progress</span>
+        </div>
+        <div class="quiz-progress"><div class="fill" id="examProgressFill"></div></div>
+        <div id="examBody"></div>
+      </div>
+    </section>
+
+    <!-- ========== CERTIFICATE ========== -->
+    <section class="view" id="view-certificate">
+      <div class="page-head">
+        <div>
+          <h2>Certificate of Completion</h2>
+          <p id="certSub">Complete all units, play the games, and pass the capstone exam.</p>
+        </div>
+        <button class="btn ripple" id="btnPrintCert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
+        </button>
+      </div>
+      <div id="certWrap"></div>
+    </section>
+
+    <!-- ========== PROFILE ========== -->
+    <section class="view" id="view-profile">
+      <div class="page-head">
+        <div>
+          <h2>Edit Profile</h2>
+          <p>Update your details. Changes save locally and sync on next submit.</p>
+        </div>
+      </div>
+      <div class="card pad-lg">
+        <div class="form">
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="pName" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Student No.</label>
+              <input type="text" id="pNo" />
+            </div>
+            <div class="field">
+              <label>Section</label>
+              <input type="text" id="pSection" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="pEmail" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>School Year</label>
+              <input type="text" id="pSY" />
+            </div>
+            <div class="field">
+              <label>Semester</label>
+              <select id="pSem">
+                <option value="1st Semester">1st Semester</option>
+                <option value="2nd Semester">2nd Semester</option>
+                <option value="Summer">Summer</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+            <button class="btn primary ripple" id="btnSaveProfile">Save Changes</button>
+            <button class="btn ripple" id="btnSubmitNow">Submit to Instructor</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Danger Zone</h3>
+        <p class="sub">Clear local progress on this device. Cannot be undone.</p>
+        <button class="btn danger ripple" id="btnResetLocal">Clear Local Progress</button>
+      </div>
+    </section>
+
+    <!-- ========== FEEDBACK ========== -->
+    <section class="view" id="view-feedback">
+      <div class="page-head">
+        <div>
+          <h2>Send Feedback</h2>
+          <p>Questions, suggestions, or issues — send directly to your instructor.</p>
+        </div>
+      </div>
+      <div class="card pad-lg" style="max-width:640px;">
+        <div class="form">
+          <div class="field">
+            <label>Your Message</label>
+            <textarea id="fbMsg" placeholder="Type your feedback here..."></textarea>
+          </div>
+          <button class="btn primary ripple" id="btnSendFeedback">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Send Feedback
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     MODAL (shared)
+============================================================ -->
+<div class="modal-backdrop" id="modalWrap">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<!-- ============================================================
+     TOAST
+============================================================ -->
+<div id="toastWrap"></div>
+
+<script>
+/* =====================================================================
+   Hot & Cold Assessment Mastery — Student App
+   Version: 3.1.0
+   Author:  JEMUEL C. MARI, MAN, RN, LPT
+   ===================================================================== */
+
+/* ⚠️  REPLACE THIS with your deployed Apps Script /exec URL ⚠️ */
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
+const APP_VERSION = '3.1.0';
+const MASTERY_THRESHOLD = 90;
+const EXAM_PASS_THRESHOLD = 75;
+
+/* =====================================================================
+   CURRICULUM DATA
+   ===================================================================== */
+
+/* ---- 8 Units × 5 questions each = 40 quiz items ---- */
+const UNITS = [
+  {
+    id:'u1', tone:'hot',
+    title:'Foundations of Thermal Therapy',
+    summary:'Definitions, principles, and the science behind heat and cold.',
+    questions:[
+      {q:'What is thermotherapy?', opts:['Therapeutic use of heat','Therapeutic use of cold','Application of pressure','Use of electrical stimulation'], a:0},
+      {q:'What is cryotherapy?', opts:['Therapeutic use of heat','Therapeutic use of cold','Therapeutic use of water','Therapeutic use of light'], a:1},
+      {q:'Which term describes the widening of blood vessels?', opts:['Vasoconstriction','Vasodilation','Conduction','Convection'], a:1},
+      {q:'Which term describes the narrowing of blood vessels?', opts:['Vasodilation','Vasoconstriction','Radiation','Evaporation'], a:1},
+      {q:'Transfer of heat between two objects through direct contact is called:', opts:['Convection','Radiation','Conduction','Evaporation'], a:2}
+    ]
+  },
+  {
+    id:'u2', tone:'cold',
+    title:'Physiologic Effects of Heat & Cold',
+    summary:'How temperature changes affect circulation, metabolism, and nerves.',
+    questions:[
+      {q:'Which is a physiologic effect of HEAT?', opts:['Vasoconstriction','Increased tissue metabolism','Decreased blood flow','Reduced tissue elasticity'], a:1},
+      {q:'Which is a physiologic effect of COLD?', opts:['Vasodilation','Increased inflammation','Reduced nerve conduction velocity','Increased edema'], a:2},
+      {q:'Cold therapy is most useful during which phase of injury?', opts:['Chronic phase','Acute phase','Rehabilitation phase','Recovery phase'], a:1},
+      {q:'Heat increases tissue elasticity, which primarily helps with:', opts:['Acute bleeding','Muscle relaxation and mobility','Fever reduction','Frostbite prevention'], a:1},
+      {q:'Cold reduces edema primarily by:', opts:['Increasing capillary permeability','Promoting vasodilation','Causing vasoconstriction','Increasing metabolic rate'], a:2}
+    ]
+  },
+  {
+    id:'u3', tone:'hot',
+    title:'Indications for Heat Therapy',
+    summary:'When heat helps — therapeutic and preventive uses.',
+    questions:[
+      {q:'Which condition is a therapeutic indication for HEAT?', opts:['Acute sprain','Muscle spasm','Active bleeding','Frostbite'], a:1},
+      {q:'Heat is often indicated for:', opts:['Chronic musculoskeletal pain','Fresh fracture','Acute inflammation','Raynaud\u2019s disease'], a:0},
+      {q:'A preventive use of heat is:', opts:['Limiting edema','Prevention of contracture formation','Reducing acute bleeding','Treating frostbite'], a:1},
+      {q:'Heat application can help with joint stiffness by:', opts:['Decreasing circulation','Increasing tissue elasticity','Causing vasoconstriction','Reducing metabolism'], a:1},
+      {q:'Which is NOT an indication for heat?', opts:['Back pain','Arthritis','Acute trauma','Muscle spasm'], a:2}
+    ]
+  },
+  {
+    id:'u4', tone:'cold',
+    title:'Indications for Cold Therapy',
+    summary:'When cold helps — acute injury, inflammation, and edema control.',
+    questions:[
+      {q:'Cold therapy is indicated for:', opts:['Chronic arthritis','Acute sprain','Muscle spasm from overuse','Frozen shoulder'], a:1},
+      {q:'A therapeutic indication for cold is:', opts:['Promoting wound healing','Reducing acute inflammation','Relaxing muscles','Increasing tissue elasticity'], a:1},
+      {q:'Cold is used in fever management to:', opts:['Increase metabolism','Lower body temperature','Increase circulation','Cause vasodilation'], a:1},
+      {q:'A preventive indication for cold is:', opts:['Prevention of contractures','Limitation of edema development','Promotion of mobility','Relief of muscle spasm'], a:1},
+      {q:'Which is NOT an indication for cold application?', opts:['Sprains','Strains','Chronic joint stiffness','Localized swelling'], a:2}
+    ]
+  },
+  {
+    id:'u5', tone:'hot',
+    title:'Contraindications — Heat & Cold',
+    summary:'Absolute vs. relative contraindications for safe practice.',
+    questions:[
+      {q:'Which is an ABSOLUTE contraindication for heat?', opts:['Chronic back pain','Active bleeding','Muscle spasm','Joint stiffness'], a:1},
+      {q:'Which is a RELATIVE contraindication for heat?', opts:['Peripheral vascular disease','Menstrual cramps','Tension headache','Mild muscle soreness'], a:0},
+      {q:'Which is an ABSOLUTE contraindication for cold?', opts:['Acute sprain','Raynaud\u2019s disease','Mild fever','Localized edema'], a:1},
+      {q:'A relative contraindication for cold is:', opts:['Elderly patients','Healthy young adult','Athletic patient','Postpartum mother'], a:0},
+      {q:'Why is impaired sensation a contraindication for thermal therapy?', opts:['It causes fever','The patient cannot detect burns or tissue damage','It increases metabolism','It causes vasodilation'], a:1}
+    ]
+  },
+  {
+    id:'u6', tone:'cold',
+    title:'Hot Sitz Bath — Principles & Setup',
+    summary:'Moist heat for the perineal and pelvic area.',
+    questions:[
+      {q:'A hot sitz bath primarily delivers:', opts:['Dry heat','Moist heat','Cold therapy','Electrical stimulation'], a:1},
+      {q:'What is the recommended water temperature for a hot sitz bath?', opts:['30\u201335 \u00b0C','35\u201338 \u00b0C','40\u201343 \u00b0C','45\u201350 \u00b0C'], a:2},
+      {q:'A hot sitz bath is most commonly used for:', opts:['Postpartum perineal discomfort','Upper back pain','Knee sprain','Tension headache'], a:0},
+      {q:'Which condition is a therapeutic indication for a hot sitz bath?', opts:['Hemorrhoids','Acute perineal bleeding','Severe sensory loss','Frostbite'], a:0},
+      {q:'Recommended duration for a hot sitz bath is:', opts:['5 minutes','15\u201320 minutes','30 minutes','45 minutes'], a:1}
+    ]
+  },
+  {
+    id:'u7', tone:'hot',
+    title:'Nursing Process — Assessment & Planning',
+    summary:'APIE for hot and cold application.',
+    questions:[
+      {q:'Which is a SUBJECTIVE assessment data for thermal therapy?', opts:['Skin color','Pain rating','Capillary refill','Body temperature'], a:1},
+      {q:'Normal capillary refill time is:', opts:['Less than 2 seconds','3\u20134 seconds','5 seconds','More than 6 seconds'], a:0},
+      {q:'A SMART goal for heat therapy might be:', opts:['Patient will feel better','After 20 min, pain will drop from 8/10 to 4/10','Patient will be comfortable','Nurse will apply heat'], a:1},
+      {q:'Before applying heat, the nurse must:', opts:['Skip assessment if patient requests','Verify provider\u2019s order and assess skin','Apply immediately to save time','Give pain medication first'], a:1},
+      {q:'Which finding would require you to STOP thermal therapy?', opts:['Mild warmth of skin','Excessive redness or blistering','Relaxed muscle tone','Reduced pain score'], a:1}
+    ]
+  },
+  {
+    id:'u8', tone:'cold',
+    title:'Complications & Safety',
+    summary:'Recognizing and preventing burns, frostbite, and skin breakdown.',
+    questions:[
+      {q:'Which sign suggests a heat-related complication?', opts:['Blister formation','Mild warmth','Muscle relaxation','Reduced pain'], a:0},
+      {q:'Which sign suggests a cold-related complication?', opts:['Muscle relaxation','Cyanosis and numbness','Vasodilation','Increased metabolism'], a:1},
+      {q:'A Hot Sitz Bath complication includes:', opts:['Dizziness and increased bleeding','Elevated mood','Increased appetite','Improved sleep'], a:0},
+      {q:'The first nursing action if a burn is suspected is:', opts:['Apply more heat','Stop treatment immediately','Document only','Wait for physician'], a:1},
+      {q:'To prevent skin breakdown during thermal therapy:', opts:['Extend application time','Assess skin frequently and limit duration','Apply directly to skin','Skip documentation'], a:1}
+    ]
+  }
+];
+
+/* ---- 30-item capstone exam (PNLE-aligned) ---- */
+const EXAM = [
+  {q:'A patient twisted his ankle 30 minutes ago. Which therapy is indicated?', opts:['Warm compress','Cold application','Hot sitz bath','Heating pad'], a:1},
+  {q:'Which physiologic effect is the goal of cold therapy in acute injury?', opts:['Vasodilation','Vasoconstriction','Increased metabolism','Muscle relaxation'], a:1},
+  {q:'Which patient is at HIGHEST risk for burn from heat application?', opts:['A 30-year-old athlete','An elderly patient with diabetes and neuropathy','A postpartum mother','A teenager with a sprain'], a:1},
+  {q:'Recommended duration for a single hot or cold application is:', opts:['5 minutes','15\u201320 minutes','30\u201345 minutes','1 hour'], a:1},
+  {q:'Which is an ABSOLUTE contraindication for heat?', opts:['Chronic low back pain','Malignant tumor in treatment area','Joint stiffness','Menstrual cramps'], a:1},
+  {q:'A hot sitz bath is prepared at what temperature range?', opts:['30\u201335 \u00b0C','40\u201343 \u00b0C','46\u201350 \u00b0C','50\u201355 \u00b0C'], a:1},
+  {q:'Mrs. Santos, 2 days postpartum with episiotomy pain 7/10, asks about a sitz bath. Best response?', opts:['Sitz bath is contraindicated postpartum','After assessing for contraindications, moist heat can promote healing','Cold is better for episiotomy','Wait 6 weeks before sitz bath'], a:1},
+  {q:'Which assessment finding indicates you should WITHHOLD heat?', opts:['Skin intact, warm','Impaired sensation in the area','Mild muscle spasm','Chronic joint stiffness'], a:1},
+  {q:'The transfer of heat through direct contact is:', opts:['Convection','Radiation','Conduction','Evaporation'], a:2},
+  {q:'Which is a preventive indication for cold therapy?', opts:['Prevention of contractures','Limitation of edema development','Relief of muscle spasm','Promotion of mobility'], a:1},
+  {q:'During cold application, cyanosis of the skin indicates:', opts:['Therapeutic effect achieved','A complication requiring immediate removal','Normal response','Improved circulation'], a:1},
+  {q:'Which nursing action is performed FIRST before applying thermal therapy?', opts:['Apply device','Perform hand hygiene and assess','Document','Give pain medication'], a:1},
+  {q:'A patient on a heating pad for back pain reports burning. Priority action?', opts:['Reassure the patient','Remove the heat source and assess the skin','Increase the heat setting','Give an analgesic'], a:1},
+  {q:'Which best describes the effect of heat on tissue metabolism?', opts:['Decreases metabolism','Increases metabolism','No effect','Blocks metabolism'], a:1},
+  {q:'Vasodilation from heat application results in:', opts:['Reduced blood flow','Increased blood flow and oxygen delivery','Decreased tissue elasticity','Increased inflammation'], a:1},
+  {q:'A hot sitz bath is a form of:', opts:['Dry heat','Moist heat','Cold therapy','Radiation therapy'], a:1},
+  {q:'Which patient would be a poor candidate for a hot sitz bath?', opts:['Postpartum mother','Patient with hemorrhoids','Patient with severe perineal bleeding','Patient with anal fissure'], a:2},
+  {q:'After removing a cold pack, the nurse notices a waxy, hard, white area on the skin. This suggests:', opts:['Normal finding','Frostbite','Vasodilation','Skin hydration'], a:1},
+  {q:'The nurse should check water temperature before a sitz bath because:', opts:['It is a legal requirement only','Hot water can cause burns','Cold water is more therapeutic','It changes the pH'], a:1},
+  {q:'Which statement about thermal therapy is TRUE?', opts:['Heat is best for acute injuries','Cold is best for chronic conditions','Heat increases blood flow, cold decreases it','Both heat and cold cause vasodilation'], a:2},
+  {q:'During a sitz bath, the patient reports dizziness. Best action?', opts:['Continue — it is normal','Assist out of the bath and assess','Add more hot water','Leave the patient alone'], a:1},
+  {q:'The recommended position for drying the perineal area after a sitz bath is:', opts:['Vigorously rub dry','Pat gently front to back','Let air dry only','Use a hot towel'], a:1},
+  {q:'Which finding is a NORMAL assessment before heat application?', opts:['Capillary refill 5 seconds','Intact skin with normal sensation','Open wound','Cyanotic area'], a:1},
+  {q:'Standard precautions during sitz bath care require:', opts:['No PPE','Hand hygiene and gloves as indicated','Only a mask','Only a gown'], a:1},
+  {q:'Which is a sign of a complication from a hot sitz bath?', opts:['Reduced perineal pain','Excessive perineal redness and increased bleeding','Improved sitting tolerance','Reduced edema'], a:1},
+  {q:'A patient with Raynaud\u2019s disease should AVOID:', opts:['Warm compresses','Cold application','Sitz bath','Chronic heat therapy'], a:1},
+  {q:'Which is the correct sequence for applying a cold pack?', opts:['Apply device, then assess','Assess, explain, apply with protective barrier, monitor','Document first, then apply','Give medication, then apply'], a:1},
+  {q:'The maximum safe application time for thermal therapy is:', opts:['5 minutes','15\u201320 minutes','40 minutes','1 hour'], a:1},
+  {q:'Which statement about moist vs dry heat is TRUE?', opts:['Dry heat penetrates deeper than moist heat','Moist heat penetrates deeper and is often more comfortable','Dry heat is always preferred for sitz baths','Moist heat causes more burns at the same temperature'], a:1},
+  {q:'A patient scores 76% on the capstone exam. Their status is:', opts:['Failed, needs retake','Passed, eligible for certificate','Pending review','Exempt'], a:1}
+];
+
+/* ---- Games ---- */
+const GAME_ITEMS = {
+  sortHotCold: [
+    {label:'Muscle spasm',      type:'hot'},
+    {label:'Acute ankle sprain',type:'cold'},
+    {label:'Chronic low back pain', type:'hot'},
+    {label:'Fresh bruise',      type:'cold'},
+    {label:'Joint stiffness',   type:'hot'},
+    {label:'Localized swelling',type:'cold'},
+    {label:'Menstrual cramps',  type:'hot'},
+    {label:'Acute inflammation',type:'cold'},
+    {label:'Tension in shoulders', type:'hot'},
+    {label:'Recent strain',     type:'cold'}
+  ],
+  safetyDrill: [
+    {q:'Patient with diabetes and neuropathy requests a heating pad. Your action?', opts:['Apply heat directly','Withhold and assess, then choose safer option','Apply at max temperature','Give cold instead'], a:1},
+    {q:'You notice a red, blistered area after heat application. Next step?', opts:['Apply more heat','Remove heat source, assess, notify','Cover with lotion','Ignore'], a:1},
+    {q:'Water for a sitz bath is 48 \u00b0C. Your action?', opts:['Proceed — it is warm enough','Cool it to 40\u201343 \u00b0C first','Add ice','Proceed at 45 \u00b0C'], a:1},
+    {q:'Patient on cold therapy says the area is numb. What do you do?', opts:['Extend application','Remove cold, reassess skin','Add more ice','Document only'], a:1},
+    {q:'Capillary refill is 5 seconds before heat application. Your action?', opts:['Proceed with heat','Withhold heat and reassess circulation','Apply cold instead','Add pressure'], a:1},
+    {q:'Patient with Raynaud\u2019s disease needs pain relief. Best choice?', opts:['Ice pack','Warm compress, after assessment','Cold compress','Immersion in cold water'], a:1},
+    {q:'Postpartum patient reports dizziness during sitz bath. Next step?', opts:['Increase water temperature','Assist out, assess, monitor','Leave her seated','Add essential oils'], a:1},
+    {q:'After cold application, skin appears waxy and pale. This suggests:', opts:['Normal cooling','Frostbite — stop treatment','Vasodilation','Therapeutic effect'], a:1}
+  ]
+};
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+let state = {
+  user: null,
+  units: {},        // { u1: { best:92, attempts:2 } }
+  games: {},        // { sortHotCold: 85, safetyDrill: 90 }
+  exam: null,       // { score:24, total:30, pct:80, passed:true, takenAt, integrityFlags:0 }
+  activity: [],
+  lastSync: null
+};
+
+let currentQuiz = null;   // { unit, index, answers }
+let currentExam = null;   // { index, answers, startTime }
+let currentGame = null;   // { type, items, index, score, ... }
+let selectedAnswer = null;
+
+/* =====================================================================
+   UTILITIES
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const nowISO = () => new Date().toISOString();
+const initials = name => (name || '?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+function toast(msg, kind='info', ms=2600){
+  const wrap = $('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + kind;
+  el.innerHTML = `<span class="dot"></span><span>${esc(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
+}
+
+function ripple(e){
+  const btn = e.target.closest('.ripple');
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  const s = document.createElement('span');
+  s.className = 'rp';
+  const size = Math.max(r.width, r.height);
+  s.style.width = s.style.height = size + 'px';
+  s.style.left = (e.clientX - r.left - size/2) + 'px';
+  s.style.top  = (e.clientY - r.top  - size/2) + 'px';
+  btn.appendChild(s);
+  setTimeout(() => s.remove(), 620);
+}
+document.addEventListener('click', ripple);
+
+function openModal(html){
+  $('modalBox').innerHTML = html;
+  $('modalWrap').classList.add('open');
+}
+function closeModal(){ $('modalWrap').classList.remove('open'); }
+$('modalWrap').addEventListener('click', e => { if (e.target === $('modalWrap')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function shuffle(a){
+  const arr = [...a];
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* =====================================================================
+   STORAGE
+   ===================================================================== */
+const STORE_KEY = 'hc_mastery_v3';
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object'){
+      state = Object.assign(state, parsed);
+    }
+  }catch(e){ console.warn('Load failed', e); }
+}
+function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn('Save failed', e); }
+}
+
+/* =====================================================================
+   DERIVED STATS
+   ===================================================================== */
+function unitsMastered(){
+  return UNITS.filter(u => state.units[u.id] && state.units[u.id].best >= MASTERY_THRESHOLD).length;
+}
+function quizAvg(){
+  const scores = UNITS.map(u => state.units[u.id] ? state.units[u.id].best : null).filter(v => v !== null);
+  if (!scores.length) return 0;
+  return scores.reduce((a,b)=>a+b,0) / scores.length;
+}
+function gamesBest(){
+  const scores = Object.values(state.games).filter(v => typeof v === 'number');
+  return scores.length ? Math.max(...scores) : 0;
+}
+function gamesAvg(){
+  const scores = Object.values(state.games).filter(v => typeof v === 'number');
+  if (!scores.length) return 0;
+  return scores.reduce((a,b)=>a+b,0) / scores.length;
+}
+function examStatusText(){
+  if (!state.exam) return 'Not yet taken';
+  return state.exam.passed ? 'PASSED ' + state.exam.pct + '%' : 'Failed ' + state.exam.pct + '%';
+}
+function overallProgress(){
+  const uPart = unitsMastered() / UNITS.length;               // 0..1
+  const qPart = quizAvg() / 100;                              // 0..1
+  const gPart = gamesAvg() / 100;                             // 0..1
+  const ePart = state.exam ? (state.exam.pct / 100) : 0;      // 0..1
+  const combined = (uPart * 0.40) + (qPart * 0.20) + (gPart * 0.20) + (ePart * 0.20);
+  return Math.round(combined * 100);
+}
+function eligibleForCertificate(){
+  return unitsMastered() === UNITS.length && state.exam && state.exam.passed;
+}
+
+/* =====================================================================
+   RENDER — SIDEBAR + HEADER
+   ===================================================================== */
+function renderUserUI(){
+  if (!state.user) return;
+  $('userAv').textContent = initials(state.user.fullName) || '?';
+  $('userNm').textContent = state.user.fullName || 'Student';
+  $('userSn').textContent = state.user.studentNo || state.user.email || '—';
+  $('greetLine').textContent = greeting();
+  $('dashName').textContent = (state.user.fullName || 'Student').split(' ')[0];
+}
+function greeting(){
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+/* =====================================================================
+   RENDER — DASHBOARD
+   ===================================================================== */
+function renderDashboard(){
+  const pct = overallProgress();
+  const ring = $('dashRing');
+  const circ = 2 * Math.PI * 66;
+  ring.style.setProperty('--circ', circ.toFixed(2));
+  const fill = ring.querySelector('.fill');
+  fill.style.strokeDasharray = circ.toFixed(2);
+  fill.style.strokeDashoffset = (circ * (1 - pct/100)).toFixed(2);
+  $('dashRingPct').textContent = pct + '%';
+
+  $('statUnits').textContent = unitsMastered() + ' / ' + UNITS.length;
+  $('statAvg').textContent = Math.round(quizAvg()) + '%';
+  $('statGames').textContent = Math.round(gamesBest()) + '%';
+  $('statExam').textContent = state.exam ? state.exam.pct + '%' : '—';
+  $('statExamHint').textContent = examStatusText();
+
+  $('navUnitsBadge').textContent = unitsMastered() + '/' + UNITS.length;
+
+  // Next unit card
+  const next = UNITS.find(u => !(state.units[u.id] && state.units[u.id].best >= MASTERY_THRESHOLD));
+  const wrap = $('homeNextUnit');
+  if (!next){
+    wrap.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <p><strong>All units mastered!</strong> Take the capstone exam to earn your certificate.</p>
+      <button class="btn primary ripple" style="margin-top:14px;" data-view="exam">Go to Capstone Exam</button>
+    </div>`;
+    wrap.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+    return;
+  }
+  const prog = state.units[next.id] ? state.units[next.id].best : 0;
+  wrap.innerHTML = `
+    <div class="unit ${next.tone}" data-unit="${next.id}">
+      <div class="unit-head">
+        <span class="unit-tag">${next.tone === 'hot' ? '🔥 Heat' : '❄️ Cold'}</span>
+        <span class="mastery-pill ${prog >= MASTERY_THRESHOLD ? '' : 'locked'}">${prog}%</span>
+      </div>
+      <h4>${esc(next.title)}</h4>
+      <p>${esc(next.summary)}</p>
+      <div class="unit-foot">
+        <div class="unit-progress">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${next.questions.length} questions
+        </div>
+        <span class="pill cold">Start →</span>
+      </div>
+    </div>`;
+  wrap.querySelector('[data-unit]').addEventListener('click', () => startQuiz(next.id));
+}
+
+/* =====================================================================
+   RENDER — UNITS
+   ===================================================================== */
+function renderUnits(){
+  const grid = $('unitGrid');
+  grid.innerHTML = UNITS.map(u => {
+    const prog = state.units[u.id] ? state.units[u.id].best : 0;
+    const mastered = prog >= MASTERY_THRESHOLD;
+    return `
+      <div class="unit ${u.tone}" data-unit="${u.id}">
+        <div class="unit-head">
+          <span class="unit-tag">${u.tone === 'hot' ? '🔥 Heat' : '❄️ Cold'}</span>
+          <span class="mastery-pill ${mastered ? '' : 'locked'}">${prog}%</span>
+        </div>
+        <h4>${esc(u.title)}</h4>
+        <p>${esc(u.summary)}</p>
+        <div class="unit-foot">
+          <div class="unit-progress">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            ${u.questions.length} items
+          </div>
+          <span class="pill ${mastered ? 'ok' : 'cold'}">${mastered ? '✓ Mastered' : 'Take quiz →'}</span>
+        </div>
+      </div>`;
+  }).join('');
+  grid.querySelectorAll('[data-unit]').forEach(el => {
+    el.addEventListener('click', () => startQuiz(el.dataset.unit));
+  });
+  $('unitsCountPill').textContent = unitsMastered() + ' / ' + UNITS.length + ' mastered';
+}
+
+/* =====================================================================
+   QUIZ LOGIC
+   ===================================================================== */
+function startQuiz(unitId){
+  const unit = UNITS.find(u => u.id === unitId);
+  if (!unit) return;
+  currentQuiz = { unit, index: 0, answers: [], correct: 0 };
+  selectedAnswer = null;
+  $('quizTitle').textContent = unit.title;
+  $('quizSubtitle').textContent = `Score ≥ ${MASTERY_THRESHOLD}% to master this unit.`;
+  showView('quiz');
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  const { unit, index } = currentQuiz;
+  const q = unit.questions[index];
+  $('quizProgressFill').style.width = ((index) / unit.questions.length * 100) + '%';
+
+  $('quizBody').innerHTML = `
+    <div class="question">
+      <div class="q-num">Question ${index+1} of ${unit.questions.length}</div>
+      <h4>${esc(q.q)}</h4>
+      <div class="options" id="quizOpts">
+        ${q.opts.map((o,i) => `
+          <button class="opt" data-i="${i}">
+            <span class="letter">${'ABCD'[i]}</span>
+            <span>${esc(o)}</span>
+          </button>`).join('')}
+      </div>
+      <div class="q-actions">
+        <button class="btn sm ripple" id="btnQuizSkip">Skip</button>
+        <button class="btn primary sm ripple" id="btnQuizNext" disabled>Next →</button>
+      </div>
+    </div>`;
+  selectedAnswer = null;
+
+  $('quizOpts').querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (selectedAnswer !== null) return;
+      selectedAnswer = Number(btn.dataset.i);
+      $('quizOpts').querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      $('btnQuizNext').disabled = false;
+    });
+  });
+  $('btnQuizSkip').addEventListener('click', () => {
+    currentQuiz.answers.push({ selected: null, correct: false });
+    advanceQuiz();
+  });
+  $('btnQuizNext').addEventListener('click', () => {
+    if (selectedAnswer === null) return;
+    const correct = selectedAnswer === q.a;
+    if (correct) currentQuiz.correct++;
+    currentQuiz.answers.push({ selected: selectedAnswer, correct });
+    advanceQuiz();
+  });
+}
+
+function advanceQuiz(){
+  currentQuiz.index++;
+  selectedAnswer = null;
+  if (currentQuiz.index >= currentQuiz.unit.questions.length){
+    finishQuiz();
+  } else {
+    renderQuizQuestion();
+  }
+}
+
+function finishQuiz(){
+  const { unit, correct } = currentQuiz;
+  const pct = Math.round(correct / unit.questions.length * 100);
+  const mastered = pct >= MASTERY_THRESHOLD;
+  const prev = state.units[unit.id] || { best: 0, attempts: 0 };
+  state.units[unit.id] = {
+    best: Math.max(prev.best, pct),
+    attempts: prev.attempts + 1,
+    lastPct: pct,
+    lastAt: nowISO()
+  };
+  logActivity(`Quiz: ${unit.title}`, pct + '%');
+  saveState();
+
+  $('quizBody').innerHTML = `
+    <div class="result">
+      <div class="score ${mastered ? 'pass' : 'fail'}">${pct}%</div>
+      <h3>${mastered ? '🎉 Unit Mastered!' : 'Keep Practicing'}</h3>
+      <p>${mastered
+        ? `Excellent! You answered ${correct} of ${unit.questions.length} correctly.`
+        : `You got ${correct} of ${unit.questions.length}. Review the unit and try again to reach ${MASTERY_THRESHOLD}%.`}</p>
+      <div class="acts">
+        <button class="btn ripple" id="btnQuizRetry">Retake Quiz</button>
+        <button class="btn primary ripple" id="btnQuizDone">Back to Units</button>
+      </div>
+    </div>`;
+
+  $('btnQuizRetry').addEventListener('click', () => startQuiz(unit.id));
+  $('btnQuizDone').addEventListener('click', () => { showView('units'); renderUnits(); renderDashboard(); });
+  $('quizProgressFill').style.width = '100%';
+  autoSubmit();
+}
+
+$('btnQuizExit').addEventListener('click', () => {
+  openModal(`
+    <h3>Exit Quiz?</h3>
+    <p>Your progress on this quiz will be lost.</p>
+    <div class="modal-actions">
+      <button class="btn ripple" id="mCancel">Stay</button>
+      <button class="btn danger ripple" id="mConfirm">Exit</button>
+    </div>`);
+  $('mCancel').addEventListener('click', closeModal);
+  $('mConfirm').addEventListener('click', () => {
+    closeModal();
+    showView('units');
+  });
+});
+
+/* =====================================================================
+   RENDER — GAMES
+   ===================================================================== */
+const GAMES_META = [
+  { id:'sortHotCold', tone:'hot',  title:'Hot vs Cold Sorter',
+    desc:'Drag each condition into the correct therapy bucket.',
+    ico:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>` },
+  { id:'safetyDrill', tone:'cold', title:'Safety Drill',
+    desc:'Rapid-fire clinical judgment for thermal therapy safety.',
+    ico:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l9 4v6c0 5-4 9-9 10-5-1-9-5-9-10V6z"/><path d="M9 12l2 2 4-4"/></svg>` }
+];
+
+function renderGames(){
+  const grid = $('gameGrid');
+  grid.innerHTML = GAMES_META.map(g => {
+    const best = state.games[g.id] || 0;
+    return `
+      <div class="game ${g.tone}" data-game="${g.id}">
+        <div class="ico">${g.ico}</div>
+        <h4>${esc(g.title)}</h4>
+        <p>${esc(g.desc)}</p>
+        <div class="best">Best: <strong>${best}%</strong></div>
+      </div>`;
+  }).join('');
+  grid.querySelectorAll('[data-game]').forEach(el => {
+    el.addEventListener('click', () => startGame(el.dataset.game));
+  });
+}
+
+function startGame(id){
+  if (id === 'sortHotCold') startSortGame();
+  else if (id === 'safetyDrill') startSafetyGame();
+}
+
+/* -------- SORT GAME -------- */
+function startSortGame(){
+  const items = shuffle(GAME_ITEMS.sortHotCold).slice(0, 10);
+  currentGame = { type:'sortHotCold', items, index:0, correct:0 };
+  showView('play');
+  renderSortRound();
+}
+function renderSortRound(){
+  const { items, index, correct } = currentGame;
+  if (index >= items.length){ return finishGame(); }
+  const item = items[index];
+  $('playScore').textContent = correct;
+  $('playRound').textContent = index + 1;
+  $('playRounds').textContent = items.length;
+  $('playTimerFill').style.width = '100%';
+
+  $('playBody').innerHTML = `
+    <div class="prompt">Sort this condition</div>
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">${esc(item.label)}</div>
+    <div class="sort-row">
+      <button class="sort-box hot" data-ans="hot">🔥 HEAT</button>
+      <button class="sort-box cold" data-ans="cold">❄️ COLD</button>
+    </div>
+    <p style="color:var(--muted);font-size:13px;">Tap the correct therapy.</p>`;
+
+  $('playBody').querySelectorAll('[data-ans]').forEach(b => {
+    b.addEventListener('click', () => {
+      const isCorrect = b.dataset.ans === item.type;
+      if (isCorrect) currentGame.correct++;
+      b.style.background = isCorrect ? 'rgba(52,211,153,0.20)' : 'rgba(248,113,113,0.20)';
+      b.style.borderStyle = 'solid';
+      setTimeout(() => {
+        currentGame.index++;
+        renderSortRound();
+      }, 550);
+    });
+  });
+}
+
+/* -------- SAFETY DRILL -------- */
+function startSafetyGame(){
+  const items = shuffle(GAME_ITEMS.safetyDrill);
+  currentGame = { type:'safetyDrill', items, index:0, correct:0 };
+  showView('play');
+  renderSafetyRound();
+}
+function renderSafetyRound(){
+  const { items, index, correct } = currentGame;
+  if (index >= items.length){ return finishGame(); }
+  const q = items[index];
+  $('playScore').textContent = correct;
+  $('playRound').textContent = index + 1;
+  $('playRounds').textContent = items.length;
+
+  $('playBody').innerHTML = `
+    <div class="q-num" style="color:var(--cold);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Safety Drill ${index+1}</div>
+    <div class="prompt">${esc(q.q)}</div>
+    <div class="options" id="safetyOpts">
+      ${q.opts.map((o,i) => `
+        <button class="opt" data-i="${i}">
+          <span class="letter">${'ABCD'[i]}</span>
+          <span>${esc(o)}</span>
+        </button>`).join('')}
+    </div>`;
+
+  $('safetyOpts').querySelectorAll('.opt').forEach(b => {
+    b.addEventListener('click', () => {
+      const i = Number(b.dataset.i);
+      const isCorrect = i === q.a;
+      if (isCorrect) currentGame.correct++;
+      $('safetyOpts').querySelectorAll('.opt').forEach((bb, idx) => {
+        if (idx === q.a) bb.classList.add('correct');
+        else if (idx === i) bb.classList.add('wrong');
+        bb.style.pointerEvents = 'none';
+      });
+      setTimeout(() => {
+        currentGame.index++;
+        renderSafetyRound();
+      }, 900);
+    });
+  });
+}
+
+/* -------- FINISH GAME -------- */
+function finishGame(){
+  const { type, correct, items } = currentGame;
+  const pct = Math.round(correct / items.length * 100);
+  const prev = state.games[type] || 0;
+  state.games[type] = Math.max(prev, pct);
+  logActivity(`Game: ${GAMES_META.find(g=>g.id===type).title}`, pct + '%');
+  saveState();
+
+  $('playBody').innerHTML = `
+    <div class="result" style="background:transparent;border:none;">
+      <div class="score ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
+      <h3>${pct >= 70 ? '🏆 Great Job!' : 'Nice Try'}</h3>
+      <p>You scored ${correct} out of ${items.length}. Best score: ${state.games[type]}%</p>
+      <div class="acts">
+        <button class="btn ripple" id="btnGameAgain">Play Again</button>
+        <button class="btn primary ripple" id="btnGameBack">Back to Games</button>
+      </div>
+    </div>`;
+
+  $('btnGameAgain').addEventListener('click', () => startGame(type));
+  $('btnGameBack').addEventListener('click', () => { showView('games'); renderGames(); renderDashboard(); });
+  autoSubmit();
+}
+
+$('btnPlayExit').addEventListener('click', () => {
+  showView('games');
+  renderGames();
+});
+
+/* =====================================================================
+   EXAM LOGIC
+   ===================================================================== */
+$('btnStartExam').addEventListener('click', () => {
+  if (state.exam){
+    toast(state.exam.passed ? 'You already passed the exam.' : 'You already used your attempt.', 'err', 4000);
+    return;
+  }
+  openModal(`
+    <h3>Begin Capstone Exam?</h3>
+    <p>This is your <strong>only attempt</strong>. 30 items, passing score 75%. Make sure you have time to finish.</p>
+    <div class="modal-actions">
+      <button class="btn ripple" id="mCancel">Cancel</button>
+      <button class="btn primary ripple" id="mConfirm">Begin Exam</button>
+    </div>`);
+  $('mCancel').addEventListener('click', closeModal);
+  $('mConfirm').addEventListener('click', () => {
+    closeModal();
+    beginExam();
+  });
+});
+
+function beginExam(){
+  currentExam = { index:0, answers:[], correct:0, startTime: Date.now(), integrityFlags:0 };
+  selectedAnswer = null;
+  $('examIntro').classList.add('hidden');
+  $('examPlay').classList.remove('hidden');
+  renderExamQuestion();
+}
+
+function renderExamQuestion(){
+  const { index } = currentExam;
+  const q = EXAM[index];
+  $('examProgressTxt').textContent = `Question ${index+1} of ${EXAM.length}`;
+  $('examProgressFill').style.width = ((index) / EXAM.length * 100) + '%';
+
+  $('examBody').innerHTML = `
+    <div class="question">
+      <div class="q-num">Q${index+1} · Capstone</div>
+      <h4>${esc(q.q)}</h4>
+      <div class="options" id="examOpts">
+        ${q.opts.map((o,i) => `
+          <button class="opt" data-i="${i}">
+            <span class="letter">${'ABCD'[i]}</span>
+            <span>${esc(o)}</span>
+          </button>`).join('')}
+      </div>
+      <div class="q-actions">
+        <span style="color:var(--muted);font-size:12px;align-self:center;">Answer is final — no going back.</span>
+        <button class="btn primary sm ripple" id="btnExamNext" disabled>${index === EXAM.length-1 ? 'Finish Exam' : 'Next →'}</button>
+      </div>
+    </div>`;
+  selectedAnswer = null;
+  $('examOpts').querySelectorAll('.opt').forEach(b => {
+    b.addEventListener('click', () => {
+      if (selectedAnswer !== null) return;
+      selectedAnswer = Number(b.dataset.i);
+      $('examOpts').querySelectorAll('.opt').forEach(bb => bb.classList.remove('selected'));
+      b.classList.add('selected');
+      $('btnExamNext').disabled = false;
+    });
+  });
+  $('btnExamNext').addEventListener('click', () => {
+    if (selectedAnswer === null) return;
+    const correct = selectedAnswer === q.a;
+    if (correct) currentExam.correct++;
+    currentExam.answers.push({ selected: selectedAnswer, correct });
+    currentExam.index++;
+    selectedAnswer = null;
+    if (currentExam.index >= EXAM.length) finishExam();
+    else renderExamQuestion();
+  });
+}
+
+function finishExam(){
+  const correct = currentExam.correct;
+  const pct = Math.round(correct / EXAM.length * 100);
+  const passed = pct >= EXAM_PASS_THRESHOLD;
+  const duration = Math.round((Date.now() - currentExam.startTime) / 1000);
+
+  state.exam = {
+    score: correct,
+    total: EXAM.length,
+    pct,
+    passed,
+    takenAt: nowISO(),
+    durationSec: duration,
+    integrityFlags: currentExam.integrityFlags || 0
+  };
+  logActivity('Capstone Exam', pct + '%' + (passed ? ' (PASSED)' : ''));
+  saveState();
+
+  $('examPlay').classList.add('hidden');
+  $('examIntro').classList.remove('hidden');
+  $('examIntro').innerHTML = `
+    <div class="big-badge" style="background:${passed ? 'var(--grad)' : 'linear-gradient(135deg,#FBBF24,#F87171)'};">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${passed
+        ? '<path d="M20 6L9 17l-5-5"/>'
+        : '<path d="M12 9v4"/><circle cx="12" cy="17" r="1" fill="currentColor"/>'}</svg>
+    </div>
+    <h2>${passed ? '🎉 Exam Passed!' : 'Exam Complete'}</h2>
+    <p>You scored <strong style="color:var(--text);font-size:20px;">${pct}%</strong> (${correct}/${EXAM.length}) · ${passed ? 'You are eligible for the Certificate of Completion.' : `A score of ${EXAM_PASS_THRESHOLD}% is required to pass. Please coordinate with your instructor regarding a retake.`}</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn ripple" data-view="units">Back to Units</button>
+      ${passed ? '<button class="btn primary ripple" data-view="certificate">View Certificate</button>' : ''}
+    </div>`;
+  $('examIntro').querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+  renderDashboard();
+  autoSubmit();
+}
+
+/* =====================================================================
+   CERTIFICATE
+   ===================================================================== */
+function renderCertificate(){
+  const eligible = eligibleForCertificate();
+  if (!eligible){
+    $('certWrap').innerHTML = `
+      <div class="card pad-lg empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>
+        <h3 style="margin-bottom:6px;color:var(--text);">Certificate Locked</h3>
+        <p>Master all ${UNITS.length} units and pass the capstone exam (≥${EXAM_PASS_THRESHOLD}%) to unlock your Certificate of Completion.</p>
+        <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          <span class="pill ${unitsMastered()===UNITS.length?'ok':'warn'}">Units: ${unitsMastered()}/${UNITS.length}</span>
+          <span class="pill ${state.exam && state.exam.passed?'ok':'warn'}">Exam: ${state.exam ? state.exam.pct+'%' : '—'}</span>
+        </div>
+      </div>`;
+    $('certSub').textContent = 'Complete all requirements to unlock.';
+    return;
+  }
+
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  $('certSub').textContent = 'Congratulations! Your certificate is ready.';
+  $('certWrap').innerHTML = `
+    <div class="cert">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>
+      </div>
+      <div class="label">Certificate of Completion</div>
+      <h2>Hot &amp; Cold Assessment Mastery</h2>
+      <p class="meta">This certifies that</p>
+      <div class="name">${esc(state.user.fullName)}</div>
+      <p class="meta">${esc(state.user.studentNo || '')} · ${esc(state.user.section || '')}</p>
+      <p class="meta" style="margin-top:8px;">has successfully completed all learning units, mastery games, and the 30-item PNLE-aligned capstone examination for <strong>NCM 104 Lab — Hot and Cold Application</strong>.</p>
+
+      <div class="scores">
+        <div class="sc"><div class="v">${Math.round(quizAvg())}%</div><div class="l">Quiz Avg</div></div>
+        <div class="sc"><div class="v">${Math.round(gamesBest())}%</div><div class="l">Games Best</div></div>
+        <div class="sc"><div class="v">${state.exam.pct}%</div><div class="l">Capstone</div></div>
+      </div>
+
+      <div class="sig">
+        <div class="line"></div>
+        <div class="who">JEMUEL C. MARI, MAN, RN, LPT</div>
+        <div class="role">Clinical Instructor · Tarlac State University</div>
+        <div class="role" style="margin-top:8px;">Issued: ${dateStr}</div>
+      </div>
+    </div>`;
+}
+
+$('btnPrintCert').addEventListener('click', () => window.print());
+
+/* =====================================================================
+   PROFILE
+   ===================================================================== */
+function renderProfile(){
+  if (!state.user) return;
+  $('pName').value    = state.user.fullName || '';
+  $('pNo').value      = state.user.studentNo || '';
+  $('pSection').value = state.user.section || '';
+  $('pEmail').value   = state.user.email || '';
+  $('pSY').value      = state.user.schoolYear || '';
+  $('pSem').value     = state.user.semester || '2nd Semester';
+}
+
+$('btnSaveProfile').addEventListener('click', () => {
+  state.user = {
+    fullName:   $('pName').value.trim(),
+    studentNo:  $('pNo').value.trim(),
+    section:    $('pSection').value.trim(),
+    email:      $('pEmail').value.trim(),
+    schoolYear: $('pSY').value.trim(),
+    semester:   $('pSem').value
+  };
+  saveState();
+  renderUserUI();
+  toast('Profile saved.', 'ok');
+});
+
+$('btnSubmitNow').addEventListener('click', () => {
+  autoSubmit(true);
+});
+
+$('btnResetLocal').addEventListener('click', () => {
+  openModal(`
+    <h3>Clear Local Progress?</h3>
+    <p>This will permanently delete your progress on this device. Your instructor's copy on the server is unaffected.</p>
+    <div class="modal-actions">
+      <button class="btn ripple" id="mCancel">Cancel</button>
+      <button class="btn danger ripple" id="mConfirm">Delete Everything</button>
+    </div>`);
+  $('mCancel').addEventListener('click', closeModal);
+  $('mConfirm').addEventListener('click', () => {
+    localStorage.removeItem(STORE_KEY);
+    closeModal();
+    location.reload();
+  });
+});
+
+/* =====================================================================
+   FEEDBACK
+   ===================================================================== */
+$('btnSendFeedback').addEventListener('click', async () => {
+  const msg = $('fbMsg').value.trim();
+  if (!msg){ toast('Please type a message.', 'err'); return; }
+  if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
+    toast('Backend not configured. Contact your instructor.', 'err', 4000);
+    return;
+  }
+  const params = new URLSearchParams({
+    action:'sendFeedback',
+    studentName: state.user.fullName || '',
+    studentNo:   state.user.studentNo || '',
+    email:       state.user.email || '',
+    message:     msg
+  });
+  try{
+    const res = await fetch(BACKEND_URL + '?' + params.toString(), { method:'GET' });
+    const data = await res.json();
+    if (data && data.success){
+      toast('Feedback sent. Thank you!', 'ok');
+      $('fbMsg').value = '';
+    } else {
+      toast('Send failed: ' + (data && data.error || 'unknown'), 'err');
+    }
+  }catch(err){
+    toast('Network error: ' + err.message, 'err', 4000);
+  }
+});
+
+/* =====================================================================
+   SUBMIT TO BACKEND
+   ===================================================================== */
+let submitInFlight = false;
+async function autoSubmit(manual = false){
+  if (submitInFlight) return;
+  if (!state.user){ if (manual) toast('Please register first.', 'err'); return; }
+  if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
+    if (manual) toast('Backend URL not set in index.html.', 'err', 4500);
+    return;
+  }
+  submitInFlight = true;
+  if (manual) toast('Submitting to instructor…', 'info', 1800);
+
+  const totalItems = UNITS.reduce((s,u) => s + u.questions.length, 0);
+  const unitsCompletedPct = Math.round(unitsMastered() / UNITS.length * 100);
+
+  const dataBlob = {
+    units: state.units,
+    games: {
+      sortHotCold: state.games.sortHotCold || 0,
+      safetyDrill: state.games.safetyDrill || 0,
+      average: Math.round(gamesAvg()),
+      best: gamesBest()
+    },
+    exam: state.exam,
+    quizAvg: Math.round(quizAvg()),
+    overall: overallProgress(),
+    totalQuizItems: totalItems,
+    updatedAt: nowISO()
+  };
+
+  const params = new URLSearchParams({
+    action: 'submit',
+    fullName:        state.user.fullName || '',
+    studentNo:       state.user.studentNo || '',
+    section:         state.user.section || '',
+    group:           state.user.group || '',
+    email:           state.user.email || '',
+    schoolYear:      state.user.schoolYear || '',
+    semester:        state.user.semester || '',
+    unitsCompleted:  unitsCompletedPct + '%',
+    unitAvg:         Math.round(quizAvg()) + '%',
+    examScore:       state.exam ? state.exam.score : '',
+    examTotal:       state.exam ? state.exam.total : '',
+    examPercentage:  state.exam ? state.exam.pct : '',
+    examPassed:      state.exam ? (state.exam.passed ? 'PASSED' : 'FAILED') : '',
+    integrityFlags:  state.exam ? (state.exam.integrityFlags || 0) : 0,
+    appVersion:      APP_VERSION,
+    dataJson:        JSON.stringify(dataBlob)
+  });
+
+  try{
+    const res = await fetch(BACKEND_URL + '?' + params.toString(), { method:'GET' });
+    const data = await res.json();
+    if (data && data.success){
+      state.lastSync = nowISO();
+      saveState();
+      if (manual) toast('Submitted ✓ Code: ' + (data.code || '—'), 'ok', 3500);
+      else toast('Progress auto-synced.', 'ok', 1800);
+    } else if (manual){
+      toast('Submit failed: ' + (data && data.error || 'unknown'), 'err', 4000);
+    }
+  }catch(err){
+    if (manual) toast('Network error: ' + err.message, 'err', 4000);
+  } finally {
+    submitInFlight = false;
+  }
+}
+
+/* =====================================================================
+   ACTIVITY LOG
+   ===================================================================== */
+function logActivity(title, detail){
+  state.activity.unshift({ title, detail, at: nowISO() });
+  state.activity = state.activity.slice(0, 30);
+}
+
+/* =====================================================================
+   VIEW ROUTER
+   ===================================================================== */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = $('view-' + name);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === name);
+  });
+  if (name === 'home')        renderDashboard();
+  if (name === 'units')       renderUnits();
+  if (name === 'games')       renderGames();
+  if (name === 'certificate') renderCertificate();
+  if (name === 'profile')     renderProfile();
+  if (name === 'exam'){
+    if (state.exam && !currentExam){
+      // Already taken — refresh intro display
+      $('examPlay').classList.add('hidden');
+      $('examIntro').classList.remove('hidden');
+    }
+  }
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => showView(btn.dataset.view));
+});
+
+/* =====================================================================
+   SIDEBAR / MOBILE
+   ===================================================================== */
+function openSidebar(){ $('sidebar').classList.add('open'); $('backdrop').classList.add('open'); }
+function closeSidebar(){ $('sidebar').classList.remove('open'); $('backdrop').classList.remove('open'); }
+$('btnBurger').addEventListener('click', openSidebar);
+$('backdrop').addEventListener('click', closeSidebar);
+
+/* =====================================================================
+   QUICK SUBMIT
+   ===================================================================== */
+$('btnQuickSubmit').addEventListener('click', () => autoSubmit(true));
+
+/* =====================================================================
+   LOGOUT
+   ===================================================================== */
+$('btnLogout').addEventListener('click', () => {
+  openModal(`
+    <h3>Logout</h3>
+    <p>Choose how you want to log out.</p>
+    <div style="display:grid;gap:10px;margin-top:16px;">
+      <button class="btn ripple" id="mKeep">Keep My Data on This Device</button>
+      <button class="btn danger ripple" id="mClear">Clear Everything (Delete Progress)</button>
+      <button class="btn ghost ripple" id="mCancel" style="border:1px solid var(--border);">Cancel</button>
+    </div>`);
+  $('mCancel').addEventListener('click', closeModal);
+  $('mKeep').addEventListener('click', () => {
+    closeModal();
+    location.reload();
+  });
+  $('mClear').addEventListener('click', () => {
+    localStorage.removeItem(STORE_KEY);
+    closeModal();
+    location.reload();
+  });
+});
+
+/* =====================================================================
+   REGISTRATION
+   ===================================================================== */
+$('btnRegister').addEventListener('click', () => {
+  const name = $('regName').value.trim();
+  const no   = $('regNo').value.trim();
+  const sec  = $('regSection').value.trim();
+  const em   = $('regEmail').value.trim();
+  const sy   = $('regSY').value.trim();
+  const sem  = $('regSem').value;
+
+  if (!name){ toast('Please enter your full name.', 'err'); return; }
+  if (!no){ toast('Please enter your student number.', 'err'); return; }
+  if (!em || !/^\S+@\S+\.\S+$/.test(em)){ toast('Please enter a valid email.', 'err'); return; }
+
+  state.user = {
+    fullName: name,
+    studentNo: no,
+    section: sec,
+    email: em,
+    schoolYear: sy,
+    semester: sem
+  };
+  saveState();
+  bootApp();
+  toast('Welcome, ' + name.split(' ')[0] + '!', 'ok');
+  setTimeout(() => autoSubmit(), 1500);
+});
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+function bootApp(){
+  $('authScreen').classList.add('hidden');
+  $('appRoot').classList.remove('hidden');
+  renderUserUI();
+  showView('home');
+}
+
+function init(){
+  loadState();
+  // Register SW
+  if ('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./service-worker.js').then(reg => {
+      const sw = reg.active || reg.installing || reg.waiting;
+      if (sw){
+        const ch = new MessageChannel();
+        ch.port1.onmessage = e => {
+          if (e.data && e.data.version){
+            $('sideVer').textContent = e.data.version;
+          }
+        };
+        sw.postMessage({ type:'GET_VERSION' }, [ch.port2]);
+      }
+    }).catch(()=>{});
+  }
+  if (state.user) bootApp();
+}
+
+init();
+</script>
+</body>
+</html>
