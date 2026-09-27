@@ -13,7 +13,7 @@
    - Major overhaul              → 4.0.0
    ===================================================================== */
 
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '3.1.2';
 
 const CACHE_NAME    = `hc-mastery-v${APP_VERSION}`;
 const RUNTIME_CACHE = `hc-mastery-runtime-v${APP_VERSION}`;
