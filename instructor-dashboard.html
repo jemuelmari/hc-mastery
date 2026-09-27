@@ -100,6 +100,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   color:var(--text);font-weight:600;font-size:13.5px;
   transition:transform .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease);
   position:relative;overflow:hidden;white-space:nowrap;
+  text-decoration:none;
+  cursor:pointer;
 }
 .btn:hover{background:var(--glass-strong);border-color:var(--border-strong);transform:translateY(-1px);}
 .btn:active{transform:translateY(0);}
@@ -574,19 +576,19 @@ td.right{text-align:right;}
 <script>
 /* =====================================================================
    Hot & Cold Assessment Mastery — Instructor Dashboard
-   Version: 3.1.0
+   Version: 3.1.1
    ===================================================================== */
 
 /* ⚠️  REPLACE with the SAME Apps Script /exec URL used elsewhere ⚠️ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
-const APP_VERSION = '3.1.0';
+const BACKEND_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
+const APP_VERSION = '3.1.1';
 const EXAM_PASS_THRESHOLD = 75;
 
 /* ---- State ---- */
 let state = {
   records: [],
   feedback: [],
-  filter: 'all',   // all | risk | passed
+  filter: 'all',
   search: ''
 };
 
@@ -650,7 +652,6 @@ async function fetchAll(){
   }
   setStatus('loading', 'Syncing with backend…');
   try{
-    /* 1. Fetch submissions */
     const [subRes, fbRes] = await Promise.all([
       fetch(BACKEND_URL + '?action=listAll&t=' + Date.now()).then(r => r.json()),
       fetch(BACKEND_URL + '?action=listFeedback&t=' + Date.now()).then(r => r.json()).catch(() => ({ success:true, records:[] }))
@@ -674,7 +675,6 @@ async function fetchAll(){
   }
 }
 
-/* ---- Parse games from dataJson ---- */
 function extractGames(rec){
   try{
     const d = typeof rec.dataJson === 'string' ? JSON.parse(rec.dataJson) : rec.dataJson;
@@ -685,7 +685,6 @@ function extractGames(rec){
   }catch(e){ return null; }
 }
 
-/* ---- Compute row view-model ---- */
 function computeRow(rec){
   const units   = num(rec.unitsCompleted);
   const quiz    = num(rec.unitAvg);
@@ -695,7 +694,6 @@ function computeRow(rec){
   const examPassed = String(rec.examPassed || '').toUpperCase() === 'PASSED';
   const flags      = Number(rec.integrityFlags || 0);
 
-  /* At-risk logic */
   const reasons = [];
   if (exam !== null && exam < EXAM_PASS_THRESHOLD) reasons.push('Exam below ' + EXAM_PASS_THRESHOLD + '%');
   if (quiz !== null && quiz < 75) reasons.push('Quiz avg below 75%');
@@ -719,11 +717,9 @@ function computeRow(rec){
   };
 }
 
-/* ---- Render everything ---- */
 function renderAll(){
   const rows = state.records.map(computeRow).filter(r => r.fullName || r.studentNo);
 
-  /* Stats */
   const total  = rows.length;
   const taken  = rows.filter(r => r.exam !== null).length;
   const passed = rows.filter(r => r.examPassed).length;
@@ -738,16 +734,9 @@ function renderAll(){
   $('chipAlerts').textContent = risk + ' alert' + (risk!==1?'s':'');
   $('chipFb').textContent = state.feedback.length + ' feedback';
 
-  /* Chart */
   renderChart(rows);
-
-  /* Alerts */
   renderAlerts(rows);
-
-  /* Roster */
   renderRoster(rows);
-
-  /* Feedback */
   renderFeedback();
 }
 
@@ -812,12 +801,10 @@ function renderAlerts(rows){
 }
 
 function renderRoster(rows){
-  /* Filter */
   let list = rows;
   if (state.filter === 'risk')   list = list.filter(r => r.atRisk);
   if (state.filter === 'passed') list = list.filter(r => r.examPassed);
 
-  /* Search */
   const q = state.search.toLowerCase().trim();
   if (q){
     list = list.filter(r =>
@@ -900,7 +887,6 @@ function renderFeedback(){
   }).join('');
 }
 
-/* ---- Student detail modal ---- */
 function openStudentModal(r){
   const rec = r.raw;
   openModal(`
@@ -950,7 +936,6 @@ function openStudentModal(r){
   });
 }
 
-/* ---- Issue retake ---- */
 async function issueRetake(studentNoOrEmail){
   if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
     toast('Backend URL not set.', 'err'); return;
@@ -996,7 +981,6 @@ async function issueRetake(studentNoOrEmail){
   }
 }
 
-/* ---- QR scanner ---- */
 let qrScanner = null;
 $('btnScanQR').addEventListener('click', () => {
   openModal(`
@@ -1030,7 +1014,7 @@ function startScanner(){
       stopScanner();
       handleScan(decodedText);
     },
-    () => {} // ignore per-frame errors
+    () => {}
   ).catch(err => {
     toast('Camera error: ' + err.message, 'err', 4000);
   });
@@ -1044,7 +1028,6 @@ function stopScanner(){
 }
 
 async function handleScan(text){
-  /* Extract code — accept raw code or a URL with ?code= */
   let code = text.trim();
   try{
     const u = new URL(text);
@@ -1086,7 +1069,6 @@ async function handleScan(text){
   }
 }
 
-/* ---- CSV export ---- */
 $('btnCSV').addEventListener('click', () => {
   if (!state.records.length){ toast('Nothing to export.', 'err'); return; }
   const rows = state.records.map(computeRow);
@@ -1113,10 +1095,8 @@ $('btnCSV').addEventListener('click', () => {
   toast('CSV exported.', 'ok');
 });
 
-/* ---- Print ---- */
 $('btnPrint').addEventListener('click', () => window.print());
 
-/* ---- Filters + search ---- */
 $('searchInput').addEventListener('input', (e) => {
   state.search = e.target.value;
   renderRoster(state.records.map(computeRow));
@@ -1125,10 +1105,8 @@ $('btnFilterAll').addEventListener('click', () => { state.filter = 'all';    ren
 $('btnFilterRisk').addEventListener('click', () => { state.filter = 'risk';   renderRoster(state.records.map(computeRow)); });
 $('btnFilterPassed').addEventListener('click', () => { state.filter = 'passed'; renderRoster(state.records.map(computeRow)); });
 
-/* ---- Sync ---- */
 $('btnSync').addEventListener('click', fetchAll);
 
-/* ---- Init ---- */
 (function init(){
   if (BACKEND_URL && !BACKEND_URL.includes('PASTE_')){
     setStatus('loading', 'Auto-syncing…');
