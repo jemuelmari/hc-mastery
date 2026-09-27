@@ -1021,9 +1021,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       </div>
       <div class="card pad-lg">
         <div class="form">
-          <div class="field">
-            <label>Full Name</label>
-            <input type="text" id="pName" />
+          <div class="field-row">
+            <div class="field">
+              <label>First Name</label>
+              <input type="text" id="pFirst" />
+            </div>
+            <div class="field">
+              <label>Last Name</label>
+              <input type="text" id="pLast" />
+            </div>
           </div>
           <div class="field-row">
             <div class="field">
@@ -1035,14 +1041,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
               <input type="text" id="pSection" />
             </div>
           </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="pEmail" />
-          </div>
           <div class="field-row">
             <div class="field">
               <label>School Year</label>
-              <input type="text" id="pSY" />
+              <select id="pSY">
+                <option value="2024-2025">2024-2025</option>
+                <option value="2025-2026">2025-2026</option>
+                <option value="2026-2027">2026-2027</option>
+              </select>
             </div>
             <div class="field">
               <label>Semester</label>
@@ -1052,6 +1058,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
                 <option value="Summer">Summer</option>
               </select>
             </div>
+          </div>
+          <div class="field">
+            <label>Group Number</label>
+            <select id="pGroup">
+              <option value="">— Select your group —</option>
+              <option value="Group 1">Group 1</option>
+              <option value="Group 2">Group 2</option>
+              <option value="Group 3">Group 3</option>
+              <option value="Group 4">Group 4</option>
+              <option value="Group 5">Group 5</option>
+              <option value="Group 6">Group 6</option>
+              <option value="Group 7">Group 7</option>
+              <option value="Group 8">Group 8</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>TSU Email</label>
+            <input type="email" id="pEmail" />
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
             <button class="btn primary ripple" id="btnSaveProfile">Save Changes</button>
