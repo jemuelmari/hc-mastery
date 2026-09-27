@@ -95,6 +95,7 @@ body{
   transition:transform .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease);
   position:relative;overflow:hidden;
   white-space:nowrap;
+  text-decoration:none;
 }
 .btn:hover{background:var(--glass-strong);border-color:var(--border-strong);transform:translateY(-1px);}
 .btn:active{transform:translateY(0);}
@@ -107,7 +108,6 @@ body{
 .btn.danger{color:var(--danger);border-color:rgba(248,113,113,0.35);}
 .btn.danger:hover{background:rgba(248,113,113,0.10);}
 
-/* Ripple */
 .ripple{position:relative;overflow:hidden;}
 .ripple > span.rp{
   position:absolute;border-radius:50%;
@@ -223,7 +223,6 @@ td input.cell:focus{
 }
 td input.cell.changed{border-color:var(--warn);background:rgba(251,191,36,0.05);}
 
-/* Validation */
 .val-badge{
   display:inline-flex;align-items:center;gap:5px;
   padding:4px 10px;border-radius:var(--radius-pill);
@@ -235,22 +234,19 @@ td input.cell.changed{border-color:var(--warn);background:rgba(251,191,36,0.05);
 .val-badge.bad{color:var(--danger);background:rgba(248,113,113,0.10);border:1px solid rgba(248,113,113,0.28);}
 .val-badge svg{width:11px;height:11px;}
 
-/* Transmuted grade color scale */
 .grade{font-weight:700;font-variant-numeric:tabular-nums;}
-.grade.g1{color:#34D399;}   /* 1.00–1.50 */
-.grade.g2{color:#5EEAD4;}   /* 1.51–2.00 */
-.grade.g3{color:#67E8F9;}   /* 2.01–2.50 */
-.grade.g4{color:#FBBF24;}   /* 2.51–3.00 */
-.grade.g5{color:#F87171;}   /* >3.00 (failed) */
+.grade.g1{color:#34D399;}
+.grade.g2{color:#5EEAD4;}
+.grade.g3{color:#67E8F9;}
+.grade.g4{color:#FBBF24;}
+.grade.g5{color:#F87171;}
 
-/* Empty state */
 .empty{
   padding:60px 24px;text-align:center;color:var(--muted);
 }
 .empty svg{width:56px;height:56px;opacity:.25;margin-bottom:14px;}
 .empty p{font-size:14px;}
 
-/* Class average row */
 tfoot td{
   padding:14px 10px;
   background:rgba(255,255,255,0.04);
@@ -362,7 +358,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   to{opacity:1;transform:translateY(0);}
 }
 
-/* ---------- Print ---------- */
 @media print{
   @page{size:legal landscape;margin:0.4in;}
   body{
@@ -393,7 +388,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   thead th,tbody td,tfoot td{padding:4px 4px !important;}
 }
 
-/* Responsive */
 @media (max-width:720px){
   body{padding:14px;}
   .title-wrap h1{font-size:18px;}
@@ -404,7 +398,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
 </head>
 <body>
 
-<!-- ============= HEADER ============= -->
 <div class="topbar">
   <div class="title-wrap">
     <div class="logo-badge">
@@ -446,7 +439,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   </div>
 </div>
 
-<!-- ============= STATUS BAR ============= -->
 <div class="status-bar">
   <span class="status-dot" id="statusDot"></span>
   <span class="status-text" id="statusText">Ready.</span>
@@ -456,7 +448,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   <span class="chip" id="chipPass">Passed: 0</span>
 </div>
 
-<!-- ============= TABLE ============= -->
 <div class="card">
   <div class="card-head">
     <h2>Class Record</h2>
@@ -503,7 +494,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   </div>
 </div>
 
-<!-- ============= WEIGHTS MODAL ============= -->
 <div class="modal-backdrop" id="modalWeights">
   <div class="modal">
     <h3>Assessment Weights</h3>
@@ -540,7 +530,6 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   </div>
 </div>
 
-<!-- ============= NORMALIZE MODAL ============= -->
 <div class="modal-backdrop" id="modalNormalize">
   <div class="modal">
     <h3>Normalize Names</h3>
@@ -555,33 +544,19 @@ tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;f
   </div>
 </div>
 
-<!-- ============= TOAST ============= -->
 <div id="toastWrap"></div>
 
 <script>
 /* =====================================================================
    Hot & Cold Assessment Mastery — Gradebook
-   Version: 3.1.0
+   Version: 3.1.1
    ===================================================================== */
 
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.1.1';
 
 /* ⚠️  REPLACE THIS with your deployed Google Apps Script /exec URL ⚠️ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
+const BACKEND_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
 
-/* ---------- Philippine Transmutation (1.00 – 5.00) ----------
-   Standard TSU / CHED-style bracket:
-     >= 96   → 1.00
-     >= 92   → 1.25
-     >= 88   → 1.50
-     >= 84   → 1.75
-     >= 80   → 2.00
-     >= 76   → 2.25
-     >= 72   → 2.50
-     >= 68   → 2.75
-     >= 64   → 3.00    (passing)
-     < 64    → 5.00    (failed)
-------------------------------------------------------------- */
 function transmute(pct){
   if (pct === null || pct === undefined || isNaN(pct)) return null;
   const p = Number(pct);
@@ -606,7 +581,6 @@ function gradeClass(g){
   return 'g5';
 }
 
-/* ---------- State ---------- */
 let state = {
   records: [],
   weights: { units: 20, quiz: 40, games: 20, exam: 20 },
@@ -615,7 +589,6 @@ let state = {
   normalizeMap: {}
 };
 
-/* ---------- Utils ---------- */
 function $(id){ return document.getElementById(id); }
 function esc(s){
   return String(s == null ? '' : s)
@@ -630,7 +603,6 @@ function num(v){
 function fmtPct(v){ return v === null ? '—' : v.toFixed(1) + '%'; }
 function fmtGrade(g){ return g === null ? '—' : g.toFixed(2); }
 
-/* Parse the JSON blob inside dataJson to extract games score if present */
 function extractGames(rec){
   try{
     if (!rec.dataJson) return null;
@@ -641,7 +613,6 @@ function extractGames(rec){
   }catch(e){ return null; }
 }
 
-/* Compute a full row view-model */
 function computeRow(rec){
   const units    = num(rec.unitsCompleted);
   const unitAvg  = num(rec.unitAvg);
@@ -660,7 +631,6 @@ function computeRow(rec){
 
   const finalGrade = finalPct === null ? null : transmute(finalPct);
 
-  /* Validation */
   const missing = [];
   if (units   === null) missing.push('units');
   if (unitAvg === null) missing.push('quiz');
@@ -692,7 +662,6 @@ function computeRow(rec){
   };
 }
 
-/* ---------- Toast ---------- */
 function toast(msg, kind='info', ms=2600){
   const wrap = $('toastWrap');
   const el = document.createElement('div');
@@ -702,14 +671,12 @@ function toast(msg, kind='info', ms=2600){
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
 }
 
-/* ---------- Status bar ---------- */
 function setStatus(kind, text){
   const dot = $('statusDot');
   dot.className = 'status-dot ' + (kind || '');
   $('statusText').innerHTML = text;
 }
 
-/* ---------- Ripple ---------- */
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.ripple');
   if (!btn) return;
@@ -724,7 +691,6 @@ document.addEventListener('click', (e) => {
   setTimeout(() => s.remove(), 620);
 });
 
-/* ---------- Load weights from localStorage ---------- */
 function loadWeights(){
   try{
     const saved = JSON.parse(localStorage.getItem('hc_gradebook_weights') || 'null');
@@ -742,7 +708,6 @@ function saveWeights(){
   localStorage.setItem('hc_gradebook_weights', JSON.stringify(state.weights));
 }
 
-/* ---------- Backend ---------- */
 async function fetchAll(){
   if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
     toast('Set BACKEND_URL in this file first.', 'err', 5000);
@@ -769,12 +734,10 @@ async function fetchAll(){
   }
 }
 
-/* ---------- Render ---------- */
 function renderTable(){
   const tbody = $('tableBody');
   const thead = $('headRow');
 
-  /* Update header sort indicators */
   thead.querySelectorAll('th.sortable').forEach(th => {
     const active = th.dataset.key === state.sortKey;
     th.classList.toggle('sorted', active);
@@ -792,7 +755,6 @@ function renderTable(){
     return;
   }
 
-  /* Sort */
   const sorted = [...state.records].sort((a,b) => {
     const k = state.sortKey;
     let va = a[k], vb = b[k];
@@ -803,7 +765,6 @@ function renderTable(){
     return va < vb ? -1 * state.sortDir : va > vb ? 1 * state.sortDir : 0;
   });
 
-  /* Build rows */
   tbody.innerHTML = sorted.map(r => {
     const rowClass = r.flag ? 'row-flag' : '';
     const gradeCls = gradeClass(r.finalGrade);
@@ -828,7 +789,6 @@ function renderTable(){
     </tr>`;
   }).join('');
 
-  /* Class averages */
   const count = sorted.length;
   const avgOf = (fn) => {
     const vals = sorted.map(fn).filter(v => v !== null && !isNaN(v));
@@ -852,7 +812,6 @@ function renderTable(){
       : `<span class="grade ${gradeClass(avgGrade)}">${avgGrade.toFixed(2)}</span>`;
   $('tableFoot').style.display = '';
 
-  /* Info */
   $('tableInfo').innerHTML = `<strong>${count}</strong> student${count!==1?'s':''} · Weights ${state.weights.units}/${state.weights.quiz}/${state.weights.games}/${state.weights.exam}`;
 
   updateStatusChips();
@@ -873,7 +832,6 @@ function updateStatusChips(){
   }
 }
 
-/* ---------- Sorting ---------- */
 $('headRow').addEventListener('click', (e) => {
   const th = e.target.closest('th.sortable');
   if (!th) return;
@@ -883,7 +841,6 @@ $('headRow').addEventListener('click', (e) => {
   renderTable();
 });
 
-/* ---------- Weights modal ---------- */
 function openWeights(){
   $('wUnits').value = state.weights.units;
   $('wQuiz').value  = state.weights.quiz;
@@ -920,7 +877,6 @@ $('btnWeightsSave').addEventListener('click', () => {
   toast('Weights saved.', 'ok');
 });
 
-/* ---------- Normalize ---------- */
 function normalizeName(s){
   if (!s) return '';
   return String(s)
@@ -980,10 +936,8 @@ $('btnNormalizeSave').addEventListener('click', () => {
   toast(count ? `Normalized ${count} name(s).` : 'No changes applied.', count ? 'ok' : 'info');
 });
 
-/* ---------- Print ---------- */
 $('btnPrint').addEventListener('click', () => window.print());
 
-/* ---------- Export CSV ---------- */
 $('btnExport').addEventListener('click', () => {
   if (!state.records.length){ toast('Nothing to export.', 'err'); return; }
   const cols = ['Student','StudentNo','Section','Email','Units%','UnitAvg%','Games%','Exam%','Final%','Grade','Validation'];
@@ -1014,10 +968,8 @@ $('btnExport').addEventListener('click', () => {
   toast('CSV exported.', 'ok');
 });
 
-/* ---------- Sync button ---------- */
 $('btnSync').addEventListener('click', fetchAll);
 
-/* ---------- Click-backdrop closes modal ---------- */
 document.querySelectorAll('.modal-backdrop').forEach(bd => {
   bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('open'); });
 });
@@ -1025,7 +977,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
 });
 
-/* ---------- Init ---------- */
 (function init(){
   loadWeights();
   $('chipStudents').textContent = '0 students';
