@@ -506,8 +506,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   outline:none;border-color:var(--cold);background:rgba(34,211,238,0.04);
   box-shadow:0 0 0 3px rgba(34,211,238,0.14);
 }
+.field select{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238B949E' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:calc(100% - 14px) center;
+  padding-right:38px;
+}
 .field textarea{min-height:120px;resize:vertical;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field .hint{font-size:11.5px;color:var(--muted);margin-top:6px;}
 
 /* ============ MODAL ============ */
 .modal-backdrop{
@@ -558,7 +564,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   min-height:100vh;display:grid;place-items:center;padding:24px;
 }
 .auth-card{
-  max-width:440px;width:100%;
+  max-width:480px;width:100%;
   background:var(--glass);border:1px solid var(--border);
   border-radius:var(--radius-xl);padding:34px 30px;
   backdrop-filter:blur(22px) saturate(150%);
@@ -682,7 +688,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <h1>Hot &amp; Cold Assessment Mastery</h1>
     <p class="tag">Thermotherapy · Cryotherapy · Hot Sitz Bath</p>
 
-        <div class="form" id="authForm">
+    <div class="form" id="authForm">
       <div class="field-row">
         <div class="field">
           <label>First Name *</label>
@@ -707,9 +713,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         <div class="field">
           <label>School Year *</label>
           <select id="regSY">
-            <option value="2024-2025">2024-2025</option>
-            <option value="2025-2026" selected>2025-2026</option>
-            <option value="2026-2027">2026-2027</option>
+            <option value="2026-2027" selected>2026-2027</option>
+            <option value="2027-2028">2027-2028</option>
+            <option value="2028-2029">2028-2029</option>
           </select>
         </div>
         <div class="field">
@@ -738,7 +744,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <div class="field">
         <label>TSU Email *</label>
         <input type="email" id="regEmail" placeholder="juan.delacruz@tsu.edu.ph" autocomplete="email" />
-        <p style="font-size:11.5px;color:var(--muted);margin-top:6px;">Use your official TSU email address</p>
+        <p class="hint">Use your official TSU email address</p>
       </div>
       <button class="btn primary block ripple" id="btnRegister" style="margin-top:6px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -1045,9 +1051,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
             <div class="field">
               <label>School Year</label>
               <select id="pSY">
-                <option value="2024-2025">2024-2025</option>
-                <option value="2025-2026">2025-2026</option>
                 <option value="2026-2027">2026-2027</option>
+                <option value="2027-2028">2027-2028</option>
+                <option value="2028-2029">2028-2029</option>
               </select>
             </div>
             <div class="field">
@@ -1136,7 +1142,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
    ===================================================================== */
 
 /* ⚠️  REPLACE THIS with your deployed Apps Script /exec URL ⚠️ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
+const BACKEND_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
 const APP_VERSION = '3.1.0';
 const MASTERY_THRESHOLD = 90;
 const EXAM_PASS_THRESHOLD = 75;
@@ -1417,10 +1423,10 @@ function examStatusText(){
   return state.exam.passed ? 'PASSED ' + state.exam.pct + '%' : 'Failed ' + state.exam.pct + '%';
 }
 function overallProgress(){
-  const uPart = unitsMastered() / UNITS.length;               // 0..1
-  const qPart = quizAvg() / 100;                              // 0..1
-  const gPart = gamesAvg() / 100;                             // 0..1
-  const ePart = state.exam ? (state.exam.pct / 100) : 0;      // 0..1
+  const uPart = unitsMastered() / UNITS.length;
+  const qPart = quizAvg() / 100;
+  const gPart = gamesAvg() / 100;
+  const ePart = state.exam ? (state.exam.pct / 100) : 0;
   const combined = (uPart * 0.40) + (qPart * 0.20) + (gPart * 0.20) + (ePart * 0.20);
   return Math.round(combined * 100);
 }
@@ -1467,7 +1473,6 @@ function renderDashboard(){
 
   $('navUnitsBadge').textContent = unitsMastered() + '/' + UNITS.length;
 
-  // Next unit card
   const next = UNITS.find(u => !(state.units[u.id] && state.units[u.id].best >= MASTERY_THRESHOLD));
   const wrap = $('homeNextUnit');
   if (!next){
@@ -1652,7 +1657,7 @@ $('btnQuizExit').addEventListener('click', () => {
    ===================================================================== */
 const GAMES_META = [
   { id:'sortHotCold', tone:'hot',  title:'Hot vs Cold Sorter',
-    desc:'Drag each condition into the correct therapy bucket.',
+    desc:'Tap the correct therapy bucket for each condition.',
     ico:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>` },
   { id:'safetyDrill', tone:'cold', title:'Safety Drill',
     desc:'Rapid-fire clinical judgment for thermal therapy safety.',
@@ -1962,7 +1967,6 @@ $('btnPrintCert').addEventListener('click', () => window.print());
    ===================================================================== */
 function renderProfile(){
   if (!state.user) return;
-  // Backward-compat: split fullName if first/last not stored yet
   let first = state.user.firstName || '';
   let last  = state.user.lastName  || '';
   if (!first && !last && state.user.fullName){
@@ -1976,7 +1980,7 @@ function renderProfile(){
   $('pSection').value = state.user.section || '';
   $('pGroup').value   = state.user.group || '';
   $('pEmail').value   = state.user.email || '';
-  $('pSY').value      = state.user.schoolYear || '2025-2026';
+  $('pSY').value      = state.user.schoolYear || '2026-2027';
   $('pSem').value     = state.user.semester || '1st Semester';
 }
 
@@ -2147,7 +2151,6 @@ function showView(name){
   if (name === 'profile')     renderProfile();
   if (name === 'exam'){
     if (state.exam && !currentExam){
-      // Already taken — refresh intro display
       $('examPlay').classList.add('hidden');
       $('examIntro').classList.remove('hidden');
     }
@@ -2248,7 +2251,6 @@ function bootApp(){
 
 function init(){
   loadState();
-  // Register SW
   if ('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').then(reg => {
       const sw = reg.active || reg.installing || reg.waiting;
