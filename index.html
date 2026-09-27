@@ -310,6 +310,99 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .unit .mastery-pill.locked{background:rgba(255,255,255,0.05);color:var(--muted);border-color:var(--border);}
 
+/* ============ LESSON ============ */
+.lesson-wrap{max-width:860px;margin:0 auto;}
+.lesson-hero{
+  position:relative;border-radius:var(--radius-xl);
+  padding:26px 28px;margin-bottom:20px;
+  background:var(--grad-soft);border:1px solid var(--border);
+  overflow:hidden;
+}
+.lesson-hero::before{
+  content:"";position:absolute;top:-100px;right:-80px;width:280px;height:280px;
+  border-radius:50%;filter:blur(40px);opacity:.55;pointer-events:none;
+}
+.lesson-hero.hot::before{background:radial-gradient(circle,var(--hot-glow),transparent 65%);}
+.lesson-hero.cold::before{background:radial-gradient(circle,var(--cold-glow),transparent 65%);}
+.lesson-hero .lesson-tag{
+  display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:4px 11px;border-radius:var(--radius-pill);
+  margin-bottom:12px;position:relative;z-index:1;
+}
+.lesson-hero.hot .lesson-tag{color:var(--hot);background:rgba(255,90,60,0.12);border:1px solid rgba(255,90,60,0.30);}
+.lesson-hero.cold .lesson-tag{color:var(--cold);background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.30);}
+.lesson-hero h2{
+  font-size:clamp(22px,3.4vw,28px);font-weight:800;letter-spacing:-.02em;
+  line-height:1.2;margin-bottom:8px;position:relative;z-index:1;
+}
+.lesson-hero p{color:var(--muted);font-size:14px;position:relative;z-index:1;max-width:620px;}
+
+.lesson-body{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:26px 28px;
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  font-size:14.5px;line-height:1.7;
+}
+.lesson-body h3{
+  font-size:17px;font-weight:800;letter-spacing:-.01em;
+  margin:22px 0 10px;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.lesson-body h3:first-child{margin-top:0;}
+.lesson-body h3 .h-ico{
+  width:22px;height:22px;border-radius:6px;flex-shrink:0;
+  display:grid;place-items:center;font-size:12px;
+}
+.lesson-body h3 .h-ico.hot{background:rgba(255,90,60,0.15);color:var(--hot);}
+.lesson-body h3 .h-ico.cold{background:rgba(34,211,238,0.15);color:var(--cold);}
+.lesson-body p{color:var(--text);margin-bottom:12px;}
+.lesson-body p.muted{color:var(--muted);}
+.lesson-body ul,.lesson-body ol{margin:0 0 14px 20px;color:var(--text);}
+.lesson-body li{margin-bottom:6px;line-height:1.65;}
+.lesson-body strong{color:var(--text);font-weight:700;}
+.lesson-body em{color:var(--cold);font-style:normal;font-weight:600;}
+
+.lesson-body .callout{
+  padding:14px 16px;border-radius:var(--radius);
+  margin:16px 0;font-size:13.5px;line-height:1.6;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.lesson-body .callout.hot{background:rgba(255,90,60,0.08);border:1px solid rgba(255,90,60,0.25);}
+.lesson-body .callout.cold{background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.25);}
+.lesson-body .callout.warn{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);}
+.lesson-body .callout.ok{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);}
+.lesson-body .callout .ci{
+  font-size:18px;line-height:1;flex-shrink:0;
+}
+.lesson-body .callout .ct{color:var(--text);}
+.lesson-body .callout .ct strong{display:block;margin-bottom:2px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
+
+.lesson-body table{
+  width:100%;border-collapse:collapse;margin:16px 0;
+  font-size:13px;border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--border);
+}
+.lesson-body th{
+  background:rgba(255,255,255,0.04);padding:10px 12px;text-align:left;
+  font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--border);
+}
+.lesson-body td{
+  padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);
+  color:var(--text);line-height:1.55;
+}
+.lesson-body tr:last-child td{border-bottom:none;}
+
+.lesson-cta{
+  display:flex;gap:12px;justify-content:space-between;align-items:center;
+  margin-top:22px;flex-wrap:wrap;
+}
+.lesson-cta .progress-note{
+  font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;
+}
+.lesson-cta .progress-note strong{color:var(--text);}
+
 /* ============ QUIZ ============ */
 .quiz-wrap{max-width:820px;margin:0 auto;}
 .quiz-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
@@ -389,7 +482,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .game .best strong{color:var(--cold);}
 
-/* game play view */
 .play-wrap{max-width:720px;margin:0 auto;}
 .play-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
 .play-head .stat-chip{
@@ -404,7 +496,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .play-card .prompt{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.4;}
 
-/* sort game */
 .sort-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:20px 0;}
 .sort-box{
   min-width:140px;padding:14px;border-radius:var(--radius);
@@ -416,18 +507,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .sort-box.cold{border-color:rgba(34,211,238,0.45);color:var(--cold);}
 .sort-box.over{background:var(--grad-soft);border-style:solid;}
 
-.sort-item{
-  display:inline-block;padding:10px 16px;border-radius:var(--radius-pill);
-  background:var(--grad);color:#fff;font-weight:700;font-size:13.5px;
-  cursor:grab;user-select:none;margin:5px;
-  box-shadow:0 8px 20px rgba(255,90,60,0.25);
-  transition:transform .15s var(--ease);
-}
-.sort-item:active{cursor:grabbing;transform:scale(.98);}
-.sort-item.picked{outline:2px solid var(--cold);outline-offset:3px;}
-.sort-item.done{opacity:.5;pointer-events:none;}
-
-/* timer bar */
 .timer-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:18px;}
 .timer-bar .fill{height:100%;background:var(--grad);transition:width .3s linear;}
 
@@ -658,14 +737,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   .cert{padding:30px 22px;}
   .cert h2{font-size:24px;}
   .cert .name{font-size:22px;}
+  .lesson-body{padding:20px 18px;}
 }
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     SVG defs for gradient strokes
-============================================================ -->
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
@@ -762,7 +839,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 ============================================================ -->
 <div class="app hidden" id="appRoot">
 
-  <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-badge">
@@ -772,7 +848,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       </div>
       <div class="brand-txt">
         <h1>Hot &amp; Cold Mastery</h1>
-        <p>NCM 104 Lab · v<span id="sideVer">3.1.0</span></p>
+        <p>NCM 104 Lab · v<span id="sideVer">3.1.1</span></p>
       </div>
     </div>
 
@@ -831,7 +907,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <div class="backdrop" id="backdrop"></div>
 
-  <!-- ============ MAIN ============ -->
   <main class="main">
 
     <div class="mobile-top">
@@ -917,11 +992,32 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <div class="page-head">
         <div>
           <h2>Learning Units</h2>
-          <p>Score at least 90% on each quiz to master the unit.</p>
+          <p>Read the lesson, then pass the quiz with at least 90% to master the unit.</p>
         </div>
         <span class="pill cold" id="unitsCountPill">0 / 8 mastered</span>
       </div>
       <div class="unit-grid" id="unitGrid"></div>
+    </section>
+
+    <!-- ========== LESSON ========== -->
+    <section class="view" id="view-lesson">
+      <div class="lesson-wrap">
+        <div id="lessonHero"></div>
+        <div class="lesson-body" id="lessonBody"></div>
+        <div class="lesson-cta">
+          <button class="btn ripple" id="btnLessonBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            Back to Units
+          </button>
+          <div class="progress-note">
+            <span id="lessonStatus">Not yet mastered</span>
+          </div>
+          <button class="btn primary ripple" id="btnTakeQuiz">
+            Take Quiz
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- ========== QUIZ ========== -->
@@ -1122,41 +1218,58 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   </main>
 </div>
 
-<!-- ============================================================
-     MODAL (shared)
-============================================================ -->
 <div class="modal-backdrop" id="modalWrap">
   <div class="modal" id="modalBox"></div>
 </div>
 
-<!-- ============================================================
-     TOAST
-============================================================ -->
 <div id="toastWrap"></div>
 
 <script>
 /* =====================================================================
    Hot & Cold Assessment Mastery — Student App
-   Version: 3.1.0
+   Version: 3.1.1
    Author:  JEMUEL C. MARI, MAN, RN, LPT
    ===================================================================== */
 
 /* ⚠️  REPLACE THIS with your deployed Apps Script /exec URL ⚠️ */
 const BACKEND_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.1.1';
 const MASTERY_THRESHOLD = 90;
 const EXAM_PASS_THRESHOLD = 75;
 
 /* =====================================================================
-   CURRICULUM DATA
+   CURRICULUM — LESSON CONTENT + QUIZ QUESTIONS
    ===================================================================== */
 
-/* ---- 8 Units × 5 questions each = 40 quiz items ---- */
 const UNITS = [
   {
     id:'u1', tone:'hot',
     title:'Foundations of Thermal Therapy',
     summary:'Definitions, principles, and the science behind heat and cold.',
+    lesson: `
+      <h3><span class="h-ico hot">🔥</span>What is Thermal Therapy?</h3>
+      <p>Thermal therapies use <strong>temperature changes</strong> to produce therapeutic effects on body tissues. Nurses apply heat and cold as <em>independent and collaborative interventions</em> in almost every clinical setting — from postpartum units to sports rehabilitation.</p>
+
+      <h3><span class="h-ico hot">🔥</span>Key Definitions</h3>
+      <ul>
+        <li><strong>Thermotherapy</strong> — therapeutic use of heat to promote healing and comfort.</li>
+        <li><strong>Cryotherapy</strong> — therapeutic use of cold to reduce pain, inflammation, and swelling.</li>
+        <li><strong>Vasodilation</strong> — widening of blood vessels → increased blood flow.</li>
+        <li><strong>Vasoconstriction</strong> — narrowing of blood vessels → decreased blood flow.</li>
+        <li><strong>Conduction</strong> — transfer of heat between two objects through direct contact (the main mechanism in hot packs and ice bags).</li>
+        <li><strong>Moist heat</strong> — heat delivered through water or steam (e.g. sitz bath, warm compresses).</li>
+        <li><strong>Dry heat</strong> — heat delivered without moisture (e.g. heating pad, hot water bag).</li>
+        <li><strong>Hot sitz bath</strong> — moist heat directed to the perineal and pelvic area.</li>
+      </ul>
+
+      <div class="callout hot">
+        <span class="ci">🔥</span>
+        <div class="ct"><strong>Remember</strong>Heat = vasodilation. Cold = vasoconstriction. Every downstream effect flows from these two principles.</div>
+      </div>
+
+      <h3><span class="h-ico cold">❄️</span>Why This Matters</h3>
+      <p>Choosing heat vs cold is not preference — it is a <strong>clinical judgment</strong> based on the phase of injury, tissue condition, patient risk factors, and the desired physiologic effect. Getting it wrong can delay healing or cause harm.</p>
+    `,
     questions:[
       {q:'What is thermotherapy?', opts:['Therapeutic use of heat','Therapeutic use of cold','Application of pressure','Use of electrical stimulation'], a:0},
       {q:'What is cryotherapy?', opts:['Therapeutic use of heat','Therapeutic use of cold','Therapeutic use of water','Therapeutic use of light'], a:1},
@@ -1169,6 +1282,41 @@ const UNITS = [
     id:'u2', tone:'cold',
     title:'Physiologic Effects of Heat & Cold',
     summary:'How temperature changes affect circulation, metabolism, and nerves.',
+    lesson: `
+      <h3><span class="h-ico hot">🔥</span>Effects of HEAT</h3>
+      <p>Heat application triggers a cascade of physiologic responses that favor healing of <em>chronic</em> conditions:</p>
+      <ul>
+        <li><strong>Vasodilation</strong> → increased local blood flow</li>
+        <li><strong>Increased oxygen and nutrient delivery</strong> to tissues</li>
+        <li><strong>Increased cellular metabolism</strong></li>
+        <li><strong>Increased tissue elasticity</strong> (helps with joint mobility)</li>
+        <li><strong>Muscle relaxation</strong> (reduces spasm)</li>
+        <li><strong>Pain reduction</strong> via reduced nerve tension and increased circulation</li>
+      </ul>
+
+      <h3><span class="h-ico cold">❄️</span>Effects of COLD</h3>
+      <p>Cold produces the opposite vascular response and is best for <em>acute</em> injuries:</p>
+      <ul>
+        <li><strong>Vasoconstriction</strong> → reduced blood flow</li>
+        <li><strong>Decreased inflammation</strong></li>
+        <li><strong>Reduced edema formation</strong></li>
+        <li><strong>Reduced nerve conduction velocity</strong> → temporary pain relief</li>
+        <li><strong>Decreased tissue metabolism</strong> (protective during acute phase)</li>
+      </ul>
+
+      <table>
+        <tr><th>Effect</th><th>Heat</th><th>Cold</th></tr>
+        <tr><td>Blood vessels</td><td>Vasodilation ↑</td><td>Vasoconstriction ↓</td></tr>
+        <tr><td>Metabolism</td><td>Increases</td><td>Decreases</td></tr>
+        <tr><td>Inflammation</td><td>May worsen acutely</td><td>Reduces</td></tr>
+        <tr><td>Best for</td><td>Chronic pain, spasm, stiffness</td><td>Acute injury, swelling, edema</td></tr>
+      </table>
+
+      <div class="callout cold">
+        <span class="ci">❄️</span>
+        <div class="ct"><strong>Clinical Pearl</strong>Cold is the go-to for the first 24–72 hours after an injury. Heat comes into play after the acute phase, for chronic pain or muscle spasm.</div>
+      </div>
+    `,
     questions:[
       {q:'Which is a physiologic effect of HEAT?', opts:['Vasoconstriction','Increased tissue metabolism','Decreased blood flow','Reduced tissue elasticity'], a:1},
       {q:'Which is a physiologic effect of COLD?', opts:['Vasodilation','Increased inflammation','Reduced nerve conduction velocity','Increased edema'], a:2},
@@ -1181,6 +1329,32 @@ const UNITS = [
     id:'u3', tone:'hot',
     title:'Indications for Heat Therapy',
     summary:'When heat helps — therapeutic and preventive uses.',
+    lesson: `
+      <h3><span class="h-ico hot">🔥</span>Therapeutic Indications</h3>
+      <p>Use heat when the goal is to <strong>relax, dilate, and increase flow</strong>:</p>
+      <ul>
+        <li>Muscle spasm</li>
+        <li>Arthritis (chronic joint pain)</li>
+        <li>Joint stiffness</li>
+        <li>Chronic musculoskeletal pain</li>
+        <li>Low back pain</li>
+        <li>Menstrual cramps</li>
+      </ul>
+
+      <h3><span class="h-ico hot">🔥</span>Preventive Indications</h3>
+      <ul>
+        <li>Prevention of contracture formation</li>
+        <li>Promotion of mobility in immobile joints</li>
+      </ul>
+
+      <div class="callout warn">
+        <span class="ci">⚠️</span>
+        <div class="ct"><strong>Do NOT use heat for</strong>Acute trauma, active bleeding, acute inflammation, or over malignant tumors. Heat worsens these conditions.</div>
+      </div>
+
+      <h3><span class="h-ico cold">❄️</span>Heat in Practice</h3>
+      <p>Application: 15–20 minutes per session. Common tools: hot water bag, heating pad, warm compress, hot sitz bath. Always verify temperature and use a protective barrier between the device and the skin.</p>
+    `,
     questions:[
       {q:'Which condition is a therapeutic indication for HEAT?', opts:['Acute sprain','Muscle spasm','Active bleeding','Frostbite'], a:1},
       {q:'Heat is often indicated for:', opts:['Chronic musculoskeletal pain','Fresh fracture','Acute inflammation','Raynaud\u2019s disease'], a:0},
@@ -1193,6 +1367,31 @@ const UNITS = [
     id:'u4', tone:'cold',
     title:'Indications for Cold Therapy',
     summary:'When cold helps — acute injury, inflammation, and edema control.',
+    lesson: `
+      <h3><span class="h-ico cold">❄️</span>Therapeutic Indications</h3>
+      <p>Use cold when the goal is to <strong>constrict, slow, and reduce</strong>:</p>
+      <ul>
+        <li>Acute injury (sprains, strains)</li>
+        <li>Acute inflammation</li>
+        <li>Localized swelling / edema</li>
+        <li>Fever management</li>
+        <li>Post-operative pain (initial 24–48 hours)</li>
+      </ul>
+
+      <h3><span class="h-ico cold">❄️</span>Preventive Indications</h3>
+      <ul>
+        <li>Limitation of edema development after injury</li>
+        <li>Reduction of bleeding in minor injuries</li>
+      </ul>
+
+      <div class="callout cold">
+        <span class="ci">❄️</span>
+        <div class="ct"><strong>Clinical Pearl</strong>Cold is most effective in the first 24–72 hours after injury. After that window, heat often becomes more appropriate for ongoing healing.</div>
+      </div>
+
+      <h3><span class="h-ico hot">🔥</span>Equipment</h3>
+      <p>Ice bag, cold compress, cooling devices. Always wrap in a protective towel — never place directly against skin.</p>
+    `,
     questions:[
       {q:'Cold therapy is indicated for:', opts:['Chronic arthritis','Acute sprain','Muscle spasm from overuse','Frozen shoulder'], a:1},
       {q:'A therapeutic indication for cold is:', opts:['Promoting wound healing','Reducing acute inflammation','Relaxing muscles','Increasing tissue elasticity'], a:1},
@@ -1205,6 +1404,42 @@ const UNITS = [
     id:'u5', tone:'hot',
     title:'Contraindications — Heat & Cold',
     summary:'Absolute vs. relative contraindications for safe practice.',
+    lesson: `
+      <h3><span class="h-ico hot">🔥</span>Contraindications to HEAT</h3>
+      <p><strong>Absolute (never apply):</strong></p>
+      <ul>
+        <li>Active bleeding</li>
+        <li>Acute trauma (first 24–48 hrs)</li>
+        <li>Significant inflammation</li>
+        <li>Malignant tumors in the treatment area</li>
+        <li>Impaired sensation</li>
+      </ul>
+      <p><strong>Relative (use caution):</strong></p>
+      <ul>
+        <li>Peripheral vascular disease</li>
+        <li>Open wounds</li>
+        <li>Cognitive impairment</li>
+      </ul>
+
+      <h3><span class="h-ico cold">❄️</span>Contraindications to COLD</h3>
+      <p><strong>Absolute:</strong></p>
+      <ul>
+        <li>Cold hypersensitivity</li>
+        <li>Raynaud's disease</li>
+        <li>Severe circulatory impairment</li>
+      </ul>
+      <p><strong>Relative:</strong></p>
+      <ul>
+        <li>Elderly patients</li>
+        <li>Infants</li>
+        <li>Peripheral neuropathy</li>
+      </ul>
+
+      <div class="callout warn">
+        <span class="ci">⚠️</span>
+        <div class="ct"><strong>Key concept</strong>When sensation is impaired, the patient cannot feel when tissue damage is occurring. This is why <em>impaired sensation</em> is an absolute contraindication for heat.</div>
+      </div>
+    `,
     questions:[
       {q:'Which is an ABSOLUTE contraindication for heat?', opts:['Chronic back pain','Active bleeding','Muscle spasm','Joint stiffness'], a:1},
       {q:'Which is a RELATIVE contraindication for heat?', opts:['Peripheral vascular disease','Menstrual cramps','Tension headache','Mild muscle soreness'], a:0},
@@ -1217,6 +1452,43 @@ const UNITS = [
     id:'u6', tone:'cold',
     title:'Hot Sitz Bath — Principles & Setup',
     summary:'Moist heat for the perineal and pelvic area.',
+    lesson: `
+      <h3><span class="h-ico cold">❄️</span>What is a Hot Sitz Bath?</h3>
+      <p>A hot sitz bath is a form of <strong>moist heat therapy</strong> where the patient's perineal and pelvic area is immersed in warm water for therapeutic purposes.</p>
+
+      <h3><span class="h-ico hot">🔥</span>Indications</h3>
+      <ul>
+        <li>Postpartum perineal discomfort</li>
+        <li>Episiotomy pain</li>
+        <li>Hemorrhoids</li>
+        <li>Anal fissures</li>
+        <li>Post-hemorrhoidectomy care</li>
+        <li>Perineal edema</li>
+        <li>Pelvic muscle spasm</li>
+      </ul>
+
+      <h3><span class="h-ico cold">❄️</span>Setup Essentials</h3>
+      <ul>
+        <li><strong>Water temperature:</strong> 40–43 °C (104–109 °F)</li>
+        <li><strong>Duration:</strong> 15–20 minutes</li>
+        <li><strong>Always use a bath thermometer</strong> — never judge by touch alone</li>
+        <li>Provide privacy, a waterproof pad, and a bath blanket</li>
+        <li>Assist the patient in and out to prevent falls and orthostatic hypotension</li>
+        <li>Dry the perineal area gently (front to back) after the bath to prevent maceration</li>
+      </ul>
+
+      <div class="callout hot">
+        <span class="ci">🔥</span>
+        <div class="ct"><strong>Physiologic effect</strong>Moist heat promotes vasodilation in the perineal region, relieves pain, relaxes pelvic muscles, and supports healing of episiotomy wounds.</div>
+      </div>
+
+      <h3><span class="h-ico cold">❄️</span>Contraindications</h3>
+      <ul>
+        <li>Active perineal bleeding</li>
+        <li>Severe tissue trauma</li>
+        <li>Significant sensory loss</li>
+      </ul>
+    `,
     questions:[
       {q:'A hot sitz bath primarily delivers:', opts:['Dry heat','Moist heat','Cold therapy','Electrical stimulation'], a:1},
       {q:'What is the recommended water temperature for a hot sitz bath?', opts:['30\u201335 \u00b0C','35\u201338 \u00b0C','40\u201343 \u00b0C','45\u201350 \u00b0C'], a:2},
@@ -1229,6 +1501,48 @@ const UNITS = [
     id:'u7', tone:'hot',
     title:'Nursing Process — Assessment & Planning',
     summary:'APIE for hot and cold application.',
+    lesson: `
+      <h3><span class="h-ico hot">🔥</span>Assessment (A)</h3>
+      <p><strong>Subjective data</strong> — what the patient tells you:</p>
+      <ul>
+        <li>Pain location, intensity, duration</li>
+        <li>Previous use of thermal therapy</li>
+        <li>Patient preference and comfort</li>
+      </ul>
+      <p><strong>Objective data</strong> — what you observe:</p>
+      <ul>
+        <li>Skin condition (intact? lesions? rash?)</li>
+        <li>Presence of edema, inflammation, or wound</li>
+        <li>Capillary refill (normal &lt; 2 seconds)</li>
+        <li>Body temperature (normal 36.5–37.5 °C)</li>
+        <li>Sensory function — can the patient feel light touch?</li>
+      </ul>
+
+      <h3><span class="h-ico cold">❄️</span>Planning (P)</h3>
+      <p>A SMART goal states what will change, by how much, and by when:</p>
+      <div class="callout cold">
+        <span class="ci">❄️</span>
+        <div class="ct"><strong>Example</strong>"After 20 minutes of heat therapy, the patient will report a reduction in pain from 8/10 to 4/10."</div>
+      </div>
+
+      <h3><span class="h-ico hot">🔥</span>Implementation (I)</h3>
+      <ol>
+        <li>Hand hygiene</li>
+        <li>Verify provider's order</li>
+        <li>Identify patient using two identifiers</li>
+        <li>Explain the procedure (reduces anxiety)</li>
+        <li>Assess treatment area</li>
+        <li>Prepare device; verify temperature</li>
+        <li>Apply protective barrier (towel)</li>
+        <li>Apply for 15–20 minutes</li>
+        <li>Monitor skin every 5 minutes</li>
+        <li>Remove device; reassess patient</li>
+        <li>Document findings</li>
+      </ol>
+
+      <h3><span class="h-ico cold">❄️</span>Evaluation (E)</h3>
+      <p>Compare outcomes to expected: pain reduced? swelling decreased? patient verbalized relief? no adverse reactions?</p>
+    `,
     questions:[
       {q:'Which is a SUBJECTIVE assessment data for thermal therapy?', opts:['Skin color','Pain rating','Capillary refill','Body temperature'], a:1},
       {q:'Normal capillary refill time is:', opts:['Less than 2 seconds','3\u20134 seconds','5 seconds','More than 6 seconds'], a:0},
@@ -1241,6 +1555,43 @@ const UNITS = [
     id:'u8', tone:'cold',
     title:'Complications & Safety',
     summary:'Recognizing and preventing burns, frostbite, and skin breakdown.',
+    lesson: `
+      <h3><span class="h-ico hot">🔥</span>Heat-Related Complications</h3>
+      <ul>
+        <li><strong>Burns</strong> — from excessive heat or prolonged application</li>
+        <li><strong>Excessive redness</strong> — early warning sign</li>
+        <li><strong>Blister formation</strong> — stop immediately</li>
+      </ul>
+      <p><strong>Nursing intervention:</strong> Remove heat source, cool the area, assess, notify provider, document.</p>
+
+      <h3><span class="h-ico cold">❄️</span>Cold-Related Complications</h3>
+      <ul>
+        <li><strong>Cyanosis</strong> — bluish skin</li>
+        <li><strong>Numbness</strong> — loss of sensation</li>
+        <li><strong>Frostbite</strong> — waxy, hard, white skin</li>
+      </ul>
+      <p><strong>Nursing intervention:</strong> Remove cold source immediately, warm the area gradually, assess, notify, document.</p>
+
+      <h3><span class="h-ico cold">❄️</span>Hot Sitz Bath Complications</h3>
+      <ul>
+        <li>Dizziness / orthostatic hypotension</li>
+        <li>Increased bleeding</li>
+        <li>Excessive perineal redness</li>
+        <li>Increased pain</li>
+      </ul>
+
+      <table>
+        <tr><th>Complication</th><th>Cause</th><th>Prevention</th></tr>
+        <tr><td>Burn</td><td>Excessive heat</td><td>Verify temperature</td></tr>
+        <tr><td>Frostbite</td><td>Excessive cold</td><td>Limit duration</td></tr>
+        <tr><td>Skin breakdown</td><td>Prolonged exposure</td><td>Frequent monitoring</td></tr>
+      </table>
+
+      <div class="callout ok">
+        <span class="ci">✅</span>
+        <div class="ct"><strong>Golden rules</strong>Assess before, monitor every 5 minutes during, and document after. Never leave the patient unattended during a sitz bath.</div>
+      </div>
+    `,
     questions:[
       {q:'Which sign suggests a heat-related complication?', opts:['Blister formation','Mild warmth','Muscle relaxation','Reduced pain'], a:0},
       {q:'Which sign suggests a cold-related complication?', opts:['Muscle relaxation','Cyanosis and numbness','Vasodilation','Increased metabolism'], a:1},
@@ -1251,7 +1602,6 @@ const UNITS = [
   }
 ];
 
-/* ---- 30-item capstone exam (PNLE-aligned) ---- */
 const EXAM = [
   {q:'A patient twisted his ankle 30 minutes ago. Which therapy is indicated?', opts:['Warm compress','Cold application','Hot sitz bath','Heating pad'], a:1},
   {q:'Which physiologic effect is the goal of cold therapy in acute injury?', opts:['Vasodilation','Vasoconstriction','Increased metabolism','Muscle relaxation'], a:1},
@@ -1285,7 +1635,6 @@ const EXAM = [
   {q:'A patient scores 76% on the capstone exam. Their status is:', opts:['Failed, needs retake','Passed, eligible for certificate','Pending review','Exempt'], a:1}
 ];
 
-/* ---- Games ---- */
 const GAME_ITEMS = {
   sortHotCold: [
     {label:'Muscle spasm',      type:'hot'},
@@ -1316,16 +1665,17 @@ const GAME_ITEMS = {
    ===================================================================== */
 let state = {
   user: null,
-  units: {},        // { u1: { best:92, attempts:2 } }
-  games: {},        // { sortHotCold: 85, safetyDrill: 90 }
-  exam: null,       // { score:24, total:30, pct:80, passed:true, takenAt, integrityFlags:0 }
+  units: {},
+  games: {},
+  exam: null,
   activity: [],
   lastSync: null
 };
 
-let currentQuiz = null;   // { unit, index, answers }
-let currentExam = null;   // { index, answers, startTime }
-let currentGame = null;   // { type, items, index, score, ... }
+let currentQuiz = null;
+let currentExam = null;
+let currentGame = null;
+let currentLessonUnitId = null;
 let selectedAnswer = null;
 
 /* =====================================================================
@@ -1362,10 +1712,7 @@ function ripple(e){
 }
 document.addEventListener('click', ripple);
 
-function openModal(html){
-  $('modalBox').innerHTML = html;
-  $('modalWrap').classList.add('open');
-}
+function openModal(html){ $('modalBox').innerHTML = html; $('modalWrap').classList.add('open'); }
 function closeModal(){ $('modalWrap').classList.remove('open'); }
 $('modalWrap').addEventListener('click', e => { if (e.target === $('modalWrap')) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
@@ -1496,12 +1843,12 @@ function renderDashboard(){
       <div class="unit-foot">
         <div class="unit-progress">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          ${next.questions.length} questions
+          ${next.questions.length} quiz items
         </div>
-        <span class="pill cold">Start →</span>
+        <span class="pill cold">Read →</span>
       </div>
     </div>`;
-  wrap.querySelector('[data-unit]').addEventListener('click', () => startQuiz(next.id));
+  wrap.querySelector('[data-unit]').addEventListener('click', () => startLesson(next.id));
 }
 
 /* =====================================================================
@@ -1522,18 +1869,60 @@ function renderUnits(){
         <p>${esc(u.summary)}</p>
         <div class="unit-foot">
           <div class="unit-progress">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            ${u.questions.length} items
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            ${u.questions.length} quiz items
           </div>
-          <span class="pill ${mastered ? 'ok' : 'cold'}">${mastered ? '✓ Mastered' : 'Take quiz →'}</span>
+          <span class="pill ${mastered ? 'ok' : 'cold'}">${mastered ? '✓ Mastered' : 'Read →'}</span>
         </div>
       </div>`;
   }).join('');
   grid.querySelectorAll('[data-unit]').forEach(el => {
-    el.addEventListener('click', () => startQuiz(el.dataset.unit));
+    el.addEventListener('click', () => startLesson(el.dataset.unit));
   });
   $('unitsCountPill').textContent = unitsMastered() + ' / ' + UNITS.length + ' mastered';
 }
+
+/* =====================================================================
+   LESSON VIEW
+   ===================================================================== */
+function startLesson(unitId){
+  const unit = UNITS.find(u => u.id === unitId);
+  if (!unit) return;
+  currentLessonUnitId = unitId;
+
+  const prog = state.units[unit.id] ? state.units[unit.id].best : 0;
+  const mastered = prog >= MASTERY_THRESHOLD;
+
+  $('lessonHero').className = 'lesson-hero ' + unit.tone;
+  $('lessonHero').innerHTML = `
+    <span class="lesson-tag">${unit.tone === 'hot' ? '🔥 Heat' : '❄️ Cold'} Unit</span>
+    <h2>${esc(unit.title)}</h2>
+    <p>${esc(unit.summary)}</p>
+  `;
+  $('lessonBody').innerHTML = unit.lesson;
+  $('lessonStatus').innerHTML = mastered
+    ? `<span style="color:var(--ok);font-weight:700;">✓ Mastered — ${prog}%</span>`
+    : (prog > 0
+        ? `Best score: <strong>${prog}%</strong> — need ${MASTERY_THRESHOLD}% to master`
+        : `Not yet taken`);
+  $('btnTakeQuiz').textContent = mastered ? 'Retake Quiz' : 'Take Quiz';
+  // Restore the arrow icon
+  $('btnTakeQuiz').innerHTML = `${mastered ? 'Retake Quiz' : 'Take Quiz'}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`;
+
+  showView('lesson');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+$('btnLessonBack').addEventListener('click', () => {
+  currentLessonUnitId = null;
+  showView('units');
+});
+
+$('btnTakeQuiz').addEventListener('click', () => {
+  if (!currentLessonUnitId) return;
+  startQuiz(currentLessonUnitId);
+});
 
 /* =====================================================================
    QUIZ LOGIC
@@ -1624,13 +2013,15 @@ function finishQuiz(){
       <h3>${mastered ? '🎉 Unit Mastered!' : 'Keep Practicing'}</h3>
       <p>${mastered
         ? `Excellent! You answered ${correct} of ${unit.questions.length} correctly.`
-        : `You got ${correct} of ${unit.questions.length}. Review the unit and try again to reach ${MASTERY_THRESHOLD}%.`}</p>
+        : `You got ${correct} of ${unit.questions.length}. Review the lesson and try again to reach ${MASTERY_THRESHOLD}%.`}</p>
       <div class="acts">
+        <button class="btn ripple" id="btnQuizReview">Review Lesson</button>
         <button class="btn ripple" id="btnQuizRetry">Retake Quiz</button>
         <button class="btn primary ripple" id="btnQuizDone">Back to Units</button>
       </div>
     </div>`;
 
+  $('btnQuizReview').addEventListener('click', () => startLesson(unit.id));
   $('btnQuizRetry').addEventListener('click', () => startQuiz(unit.id));
   $('btnQuizDone').addEventListener('click', () => { showView('units'); renderUnits(); renderDashboard(); });
   $('quizProgressFill').style.width = '100%';
@@ -1648,12 +2039,13 @@ $('btnQuizExit').addEventListener('click', () => {
   $('mCancel').addEventListener('click', closeModal);
   $('mConfirm').addEventListener('click', () => {
     closeModal();
-    showView('units');
+    if (currentQuiz && currentQuiz.unit) startLesson(currentQuiz.unit.id);
+    else showView('units');
   });
 });
 
 /* =====================================================================
-   RENDER — GAMES
+   GAMES
    ===================================================================== */
 const GAMES_META = [
   { id:'sortHotCold', tone:'hot',  title:'Hot vs Cold Sorter',
@@ -1686,7 +2078,6 @@ function startGame(id){
   else if (id === 'safetyDrill') startSafetyGame();
 }
 
-/* -------- SORT GAME -------- */
 function startSortGame(){
   const items = shuffle(GAME_ITEMS.sortHotCold).slice(0, 10);
   currentGame = { type:'sortHotCold', items, index:0, correct:0 };
@@ -1725,7 +2116,6 @@ function renderSortRound(){
   });
 }
 
-/* -------- SAFETY DRILL -------- */
 function startSafetyGame(){
   const items = shuffle(GAME_ITEMS.safetyDrill);
   currentGame = { type:'safetyDrill', items, index:0, correct:0 };
@@ -1769,7 +2159,6 @@ function renderSafetyRound(){
   });
 }
 
-/* -------- FINISH GAME -------- */
 function finishGame(){
   const { type, correct, items } = currentGame;
   const pct = Math.round(correct / items.length * 100);
@@ -1800,7 +2189,7 @@ $('btnPlayExit').addEventListener('click', () => {
 });
 
 /* =====================================================================
-   EXAM LOGIC
+   EXAM
    ===================================================================== */
 $('btnStartExam').addEventListener('click', () => {
   if (state.exam){
