@@ -1962,21 +1962,38 @@ $('btnPrintCert').addEventListener('click', () => window.print());
    ===================================================================== */
 function renderProfile(){
   if (!state.user) return;
-  $('pName').value    = state.user.fullName || '';
+  // Backward-compat: split fullName if first/last not stored yet
+  let first = state.user.firstName || '';
+  let last  = state.user.lastName  || '';
+  if (!first && !last && state.user.fullName){
+    const parts = state.user.fullName.trim().split(/\s+/);
+    first = parts.shift() || '';
+    last  = parts.join(' ') || '';
+  }
+  $('pFirst').value   = first;
+  $('pLast').value    = last;
   $('pNo').value      = state.user.studentNo || '';
   $('pSection').value = state.user.section || '';
+  $('pGroup').value   = state.user.group || '';
   $('pEmail').value   = state.user.email || '';
-  $('pSY').value      = state.user.schoolYear || '';
-  $('pSem').value     = state.user.semester || '2nd Semester';
+  $('pSY').value      = state.user.schoolYear || '2025-2026';
+  $('pSem').value     = state.user.semester || '1st Semester';
 }
 
 $('btnSaveProfile').addEventListener('click', () => {
+  const first = $('pFirst').value.trim();
+  const last  = $('pLast').value.trim();
+  if (!first || !last){ toast('First and last name required.', 'err'); return; }
+  const fullName = `${first} ${last}`.replace(/\s+/g,' ').trim();
   state.user = {
-    fullName:   $('pName').value.trim(),
+    fullName,
+    firstName:  first,
+    lastName:   last,
     studentNo:  $('pNo').value.trim(),
     section:    $('pSection').value.trim(),
+    group:      $('pGroup').value,
     email:      $('pEmail').value.trim(),
-    schoolYear: $('pSY').value.trim(),
+    schoolYear: $('pSY').value,
     semester:   $('pSem').value
   };
   saveState();
