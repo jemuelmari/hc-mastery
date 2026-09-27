@@ -2160,28 +2160,38 @@ $('btnLogout').addEventListener('click', () => {
    REGISTRATION
    ===================================================================== */
 $('btnRegister').addEventListener('click', () => {
-  const name = $('regName').value.trim();
-  const no   = $('regNo').value.trim();
-  const sec  = $('regSection').value.trim();
-  const em   = $('regEmail').value.trim();
-  const sy   = $('regSY').value.trim();
-  const sem  = $('regSem').value;
+  const first = $('regFirst').value.trim();
+  const last  = $('regLast').value.trim();
+  const no    = $('regNo').value.trim();
+  const sec   = $('regSection').value.trim();
+  const grp   = $('regGroup').value;
+  const em    = $('regEmail').value.trim();
+  const sy    = $('regSY').value;
+  const sem   = $('regSem').value;
 
-  if (!name){ toast('Please enter your full name.', 'err'); return; }
+  if (!first){ toast('Please enter your first name.', 'err'); return; }
+  if (!last){ toast('Please enter your last name.', 'err'); return; }
   if (!no){ toast('Please enter your student number.', 'err'); return; }
-  if (!em || !/^\S+@\S+\.\S+$/.test(em)){ toast('Please enter a valid email.', 'err'); return; }
+  if (!sec){ toast('Please enter your section.', 'err'); return; }
+  if (!grp){ toast('Please select your group.', 'err'); return; }
+  if (!em || !/^\S+@\S+\.\S+$/.test(em)){ toast('Please enter a valid TSU email.', 'err'); return; }
+
+  const fullName = `${first} ${last}`.replace(/\s+/g,' ').trim();
 
   state.user = {
-    fullName: name,
+    fullName,
+    firstName: first,
+    lastName: last,
     studentNo: no,
     section: sec,
+    group: grp,
     email: em,
     schoolYear: sy,
     semester: sem
   };
   saveState();
   bootApp();
-  toast('Welcome, ' + name.split(' ')[0] + '!', 'ok');
+  toast('Welcome, ' + first + '!', 'ok');
   setTimeout(() => autoSubmit(), 1500);
 });
 
