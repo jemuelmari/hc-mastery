@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0E1116" />
+<title>Gradebook — Hot &amp; Cold Assessment Mastery</title>
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+:root{
+  --bg:#0E1116;
+  --surface:#161B22;
+  --glass:rgba(255,255,255,0.06);
+  --glass-strong:rgba(255,255,255,0.10);
+  --border:rgba(255,255,255,0.10);
+  --border-strong:rgba(255,255,255,0.18);
+
+  --hot:#FF5A3C;
+  --hot-soft:#FF8A65;
+  --hot-glow:rgba(255,90,60,0.45);
+
+  --cold:#22D3EE;
+  --cold-soft:#67E8F9;
+  --cold-glow:rgba(34,211,238,0.45);
+
+  --grad:linear-gradient(135deg,#FF5A3C 0%,#22D3EE 100%);
+  --grad-soft:linear-gradient(135deg,rgba(255,90,60,0.18) 0%,rgba(34,211,238,0.18) 100%);
+
+  --ok:#34D399;
+  --warn:#FBBF24;
+  --danger:#F87171;
+
+  --text:#E6EDF3;
+  --muted:#8B949E;
+  --muted-2:#6E7681;
+
+  --radius-sm:10px;
+  --radius:14px;
+  --radius-lg:20px;
+  --radius-pill:999px;
+
+  --shadow:0 10px 30px rgba(0,0,0,0.45);
+
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:
+    radial-gradient(1200px 800px at 10% -10%, rgba(255,90,60,0.10), transparent 60%),
+    radial-gradient(1200px 800px at 110% 110%, rgba(34,211,238,0.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding:20px;
+}
+
+/* ---------- Header ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;margin-bottom:18px;
+}
+.title-wrap{display:flex;align-items:center;gap:14px;}
+.logo-badge{
+  width:52px;height:52px;border-radius:14px;
+  background:var(--grad);
+  display:grid;place-items:center;flex-shrink:0;
+  box-shadow:0 8px 24px rgba(255,90,60,0.30), 0 8px 24px rgba(34,211,238,0.20);
+}
+.logo-badge svg{width:28px;height:28px;color:#fff;}
+.title-wrap h1{
+  font-size:22px;font-weight:800;letter-spacing:-.02em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.title-wrap p{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px;}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 16px;border-radius:var(--radius-pill);
+  background:var(--glass);border:1px solid var(--border);
+  color:var(--text);font-weight:600;font-size:13.5px;
+  cursor:pointer;font-family:inherit;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:transform .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease);
+  position:relative;overflow:hidden;
+  white-space:nowrap;
+}
+.btn:hover{background:var(--glass-strong);border-color:var(--border-strong);transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn svg{width:15px;height:15px;flex-shrink:0;}
+.btn.primary{
+  background:var(--grad);border:none;color:#fff;
+  box-shadow:0 8px 22px rgba(255,90,60,0.28), 0 8px 22px rgba(34,211,238,0.22);
+}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.danger{color:var(--danger);border-color:rgba(248,113,113,0.35);}
+.btn.danger:hover{background:rgba(248,113,113,0.10);}
+
+/* Ripple */
+.ripple{position:relative;overflow:hidden;}
+.ripple > span.rp{
+  position:absolute;border-radius:50%;
+  transform:scale(0);opacity:.55;pointer-events:none;
+  background:rgba(255,255,255,0.5);
+  animation:ripple .6s ease-out;
+}
+@keyframes ripple{to{transform:scale(4);opacity:0;}}
+
+/* ---------- Status bar ---------- */
+.status-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 16px;border-radius:var(--radius);
+  background:var(--glass);border:1px solid var(--border);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  font-size:13px;margin-bottom:16px;
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--muted-2);
+  box-shadow:0 0 0 3px rgba(110,118,129,0.15);
+  flex-shrink:0;
+}
+.status-dot.online{background:var(--ok);box-shadow:0 0 0 3px rgba(52,211,153,0.20);}
+.status-dot.offline{background:var(--danger);box-shadow:0 0 0 3px rgba(248,113,113,0.20);}
+.status-dot.loading{background:var(--warn);box-shadow:0 0 0 3px rgba(251,191,36,0.20);animation:pulse 1.2s infinite;}
+@keyframes pulse{50%{opacity:.4;}}
+.status-text{color:var(--muted);}
+.status-text strong{color:var(--text);font-weight:600;}
+.status-bar .spacer{flex:1;}
+
+.chip{
+  padding:5px 12px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  font-size:12px;font-weight:600;color:var(--muted);
+}
+.chip.hot{color:var(--hot);border-color:rgba(255,90,60,0.35);background:rgba(255,90,60,0.08);}
+.chip.cold{color:var(--cold);border-color:rgba(34,211,238,0.35);background:rgba(34,211,238,0.08);}
+
+/* ---------- Table card ---------- */
+.card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  animation:fadeUp .5s var(--ease) both;
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:16px 20px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+}
+.card-head h2{
+  font-size:14px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+}
+.card-head .info{font-size:13px;color:var(--muted);}
+.card-head .info strong{color:var(--text);font-weight:700;}
+
+.table-scroll{overflow-x:auto;overflow-y:visible;}
+table{
+  width:100%;border-collapse:collapse;
+  font-size:13px;min-width:1300px;
+}
+thead th{
+  position:sticky;top:0;z-index:5;
+  background:linear-gradient(180deg,rgba(22,27,34,0.98),rgba(22,27,34,0.92));
+  backdrop-filter:blur(12px);
+  color:var(--muted);
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:12px 10px;text-align:left;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+  user-select:none;
+}
+thead th.sortable{cursor:pointer;transition:color .2s var(--ease);}
+thead th.sortable:hover{color:var(--text);}
+thead th .arrow{opacity:.35;margin-left:4px;font-size:10px;}
+thead th.sorted .arrow{opacity:1;color:var(--cold);}
+
+tbody td{
+  padding:11px 10px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  color:var(--text);
+  vertical-align:middle;
+  white-space:nowrap;
+}
+tbody tr{transition:background .15s var(--ease);}
+tbody tr:hover{background:rgba(255,255,255,0.03);}
+tbody tr.row-flag{background:rgba(248,113,113,0.06);}
+tbody tr.row-flag:hover{background:rgba(248,113,113,0.10);}
+tbody tr:last-child td{border-bottom:none;}
+
+td.name{font-weight:600;color:var(--text);min-width:180px;white-space:normal;}
+td.mono{font-family:'SF Mono','Monaco','Consolas',monospace;font-size:12px;color:var(--muted);}
+
+td input.cell{
+  width:100%;min-width:60px;
+  background:transparent;border:1px solid transparent;
+  border-radius:6px;color:var(--text);
+  font-family:inherit;font-size:13px;font-weight:600;
+  padding:6px 8px;
+  transition:border-color .15s var(--ease),background .15s var(--ease);
+}
+td input.cell:hover{border-color:var(--border);}
+td input.cell:focus{
+  outline:none;border-color:var(--cold);
+  background:rgba(34,211,238,0.06);
+  box-shadow:0 0 0 3px rgba(34,211,238,0.12);
+}
+td input.cell.changed{border-color:var(--warn);background:rgba(251,191,36,0.05);}
+
+/* Validation */
+.val-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:var(--radius-pill);
+  font-size:11.5px;font-weight:700;letter-spacing:.02em;
+  white-space:nowrap;
+}
+.val-badge.ok{color:var(--ok);background:rgba(52,211,153,0.10);border:1px solid rgba(52,211,153,0.28);}
+.val-badge.warn{color:var(--warn);background:rgba(251,191,36,0.10);border:1px solid rgba(251,191,36,0.28);}
+.val-badge.bad{color:var(--danger);background:rgba(248,113,113,0.10);border:1px solid rgba(248,113,113,0.28);}
+.val-badge svg{width:11px;height:11px;}
+
+/* Transmuted grade color scale */
+.grade{font-weight:700;font-variant-numeric:tabular-nums;}
+.grade.g1{color:#34D399;}   /* 1.00–1.50 */
+.grade.g2{color:#5EEAD4;}   /* 1.51–2.00 */
+.grade.g3{color:#67E8F9;}   /* 2.01–2.50 */
+.grade.g4{color:#FBBF24;}   /* 2.51–3.00 */
+.grade.g5{color:#F87171;}   /* >3.00 (failed) */
+
+/* Empty state */
+.empty{
+  padding:60px 24px;text-align:center;color:var(--muted);
+}
+.empty svg{width:56px;height:56px;opacity:.25;margin-bottom:14px;}
+.empty p{font-size:14px;}
+
+/* Class average row */
+tfoot td{
+  padding:14px 10px;
+  background:rgba(255,255,255,0.04);
+  border-top:1px solid var(--border-strong);
+  font-weight:700;font-size:13px;
+  color:var(--text);
+  white-space:nowrap;
+}
+tfoot td.label{color:var(--cold);letter-spacing:.05em;text-transform:uppercase;font-size:11.5px;}
+
+/* ---------- Modal ---------- */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+  opacity:0;transition:opacity .25s var(--ease);
+}
+.modal-backdrop.open{display:flex;opacity:1;}
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border-strong);
+  border-radius:var(--radius-lg);
+  max-width:560px;width:100%;
+  max-height:88vh;overflow-y:auto;
+  padding:26px;
+  box-shadow:0 30px 80px rgba(0,0,0,0.65);
+  transform:translateY(14px) scale(.98);
+  transition:transform .3s var(--ease);
+}
+.modal-backdrop.open .modal{transform:translateY(0) scale(1);}
+.modal h3{
+  font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:6px;
+}
+.modal .sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
+
+.form-row{margin-bottom:16px;}
+.form-row label{
+  display:block;font-size:12px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+}
+.form-row input[type="number"],.form-row input[type="text"]{
+  width:100%;padding:12px 14px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);
+  font-family:inherit;font-size:14px;font-weight:600;
+  transition:border-color .15s var(--ease);
+}
+.form-row input:focus{outline:none;border-color:var(--cold);box-shadow:0 0 0 3px rgba(34,211,238,0.15);}
+
+.weights-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.weight-total{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-radius:var(--radius-sm);
+  background:var(--grad-soft);border:1px solid var(--border);
+  margin-top:6px;font-weight:700;
+}
+.weight-total .label{font-size:13px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+.weight-total .val{font-size:20px;color:var(--cold);font-variant-numeric:tabular-nums;}
+.weight-total .val.bad{color:var(--danger);}
+
+.normalize-list{
+  max-height:280px;overflow-y:auto;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  margin-bottom:16px;
+}
+.norm-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:13px;gap:12px;
+}
+.norm-item:last-child{border-bottom:none;}
+.norm-item .from{color:var(--muted);text-decoration:line-through;}
+.norm-item .to{color:var(--ok);font-weight:600;}
+.norm-item .arrow{color:var(--muted-2);}
+
+.modal-actions{
+  display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap;
+}
+
+/* ---------- Toast ---------- */
+#toastWrap{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+  z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;
+  pointer-events:none;
+}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 20px;border-radius:var(--radius-pill);
+  background:rgba(22,27,34,0.95);
+  border:1px solid var(--border-strong);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 12px 34px rgba(0,0,0,0.55);
+  font-size:13.5px;font-weight:600;color:var(--text);
+  animation:toastIn .3s var(--ease);
+  pointer-events:auto;max-width:90vw;
+}
+.toast.out{animation:toastOut .3s var(--ease) forwards;}
+.toast .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast.ok .dot{background:var(--ok);box-shadow:0 0 10px rgba(52,211,153,0.6);}
+.toast.err .dot{background:var(--danger);box-shadow:0 0 10px rgba(248,113,113,0.6);}
+.toast.info .dot{background:var(--cold);box-shadow:0 0 10px rgba(34,211,238,0.6);}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes toastOut{to{opacity:0;transform:translateY(20px) scale(.95);}}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ---------- Print ---------- */
+@media print{
+  @page{size:legal landscape;margin:0.4in;}
+  body{
+    background:#fff !important;color:#000 !important;padding:0 !important;
+    font-size:10px !important;
+  }
+  .topbar .actions,.status-bar,.no-print{display:none !important;}
+  .card{background:#fff !important;border:none !important;box-shadow:none !important;}
+  .card-head{border-bottom:1px solid #000 !important;}
+  .card-head h2,.title-wrap p{color:#000 !important;}
+  .title-wrap h1{
+    background:none !important;-webkit-text-fill-color:#000 !important;color:#000 !important;
+  }
+  .logo-badge{display:none !important;}
+  thead th{
+    background:#f2f2f2 !important;color:#000 !important;
+    border-bottom:1px solid #000 !important;
+    position:static !important;
+  }
+  tbody td{color:#000 !important;border-bottom:1px solid #ccc !important;}
+  td input.cell{color:#000 !important;border:none !important;background:transparent !important;padding:0 !important;}
+  tfoot td{background:#f2f2f2 !important;color:#000 !important;border-top:1px solid #000 !important;}
+  tfoot td.label{color:#000 !important;}
+  .grade.g1,.grade.g2,.grade.g3,.grade.g4,.grade.g5{color:#000 !important;}
+  .val-badge{border:1px solid #999 !important;color:#000 !important;background:#fff !important;}
+  .table-scroll{overflow:visible !important;}
+  table{min-width:0 !important;width:100% !important;font-size:9px !important;}
+  thead th,tbody td,tfoot td{padding:4px 4px !important;}
+}
+
+/* Responsive */
+@media (max-width:720px){
+  body{padding:14px;}
+  .title-wrap h1{font-size:18px;}
+  .btn{padding:9px 13px;font-size:12.5px;}
+  .weights-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============= HEADER ============= -->
+<div class="topbar">
+  <div class="title-wrap">
+    <div class="logo-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20"/><path d="M8 5c0 2 4 2 4 4s-4 2-4 4 4 2 4 4"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Gradebook</h1>
+      <p>Hot &amp; Cold Assessment Mastery — NCM 104 Lab</p>
+    </div>
+  </div>
+
+  <div class="actions no-print">
+    <button class="btn ripple" id="btnSync">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+      Sync
+    </button>
+    <button class="btn ripple" id="btnNormalize">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+      Normalize
+    </button>
+    <button class="btn ripple" id="btnWeights">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      Weights
+    </button>
+    <button class="btn ripple" id="btnPrint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print
+    </button>
+    <button class="btn ripple primary" id="btnExport">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+  </div>
+</div>
+
+<!-- ============= STATUS BAR ============= -->
+<div class="status-bar">
+  <span class="status-dot" id="statusDot"></span>
+  <span class="status-text" id="statusText">Ready.</span>
+  <span class="spacer"></span>
+  <span class="chip" id="chipStudents">0 students</span>
+  <span class="chip cold" id="chipAvg">Class Avg: —</span>
+  <span class="chip" id="chipPass">Passed: 0</span>
+</div>
+
+<!-- ============= TABLE ============= -->
+<div class="card">
+  <div class="card-head">
+    <h2>Class Record</h2>
+    <div class="info" id="tableInfo">Loading…</div>
+  </div>
+
+  <div class="table-scroll">
+    <table id="gradeTable">
+      <thead>
+        <tr id="headRow">
+          <th class="sortable" data-key="fullName">Student <span class="arrow">▼</span></th>
+          <th class="sortable" data-key="studentNo">Student No. <span class="arrow">▼</span></th>
+          <th class="sortable" data-key="section">Section <span class="arrow">▼</span></th>
+          <th class="sortable" data-key="email">Email <span class="arrow">▼</span></th>
+          <th>Units %</th>
+          <th>Unit Avg %</th>
+          <th>Games %</th>
+          <th>Exam %</th>
+          <th>Final %</th>
+          <th class="sortable" data-key="final">Grade <span class="arrow">▼</span></th>
+          <th>Validation</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="11" class="empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>
+          <p>Press <strong>Sync</strong> to load student records.</p>
+        </td></tr>
+      </tbody>
+      <tfoot id="tableFoot" style="display:none;">
+        <tr>
+          <td class="label">Class Average</td>
+          <td colspan="4"></td>
+          <td id="avgUnits">—</td>
+          <td id="avgUnitAvg">—</td>
+          <td id="avgGames">—</td>
+          <td id="avgExam">—</td>
+          <td id="avgFinal">—</td>
+          <td id="avgGrade">—</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ============= WEIGHTS MODAL ============= -->
+<div class="modal-backdrop" id="modalWeights">
+  <div class="modal">
+    <h3>Assessment Weights</h3>
+    <p class="sub">Adjust the percentage contribution of each component. Total must equal 100%.</p>
+
+    <div class="weights-grid">
+      <div class="form-row">
+        <label>Completion %</label>
+        <input type="number" id="wUnits" min="0" max="100" step="1" value="20" />
+      </div>
+      <div class="form-row">
+        <label>Quizzes (Unit Avg) %</label>
+        <input type="number" id="wQuiz" min="0" max="100" step="1" value="40" />
+      </div>
+      <div class="form-row">
+        <label>Games %</label>
+        <input type="number" id="wGames" min="0" max="100" step="1" value="20" />
+      </div>
+      <div class="form-row">
+        <label>Capstone Exam %</label>
+        <input type="number" id="wExam" min="0" max="100" step="1" value="20" />
+      </div>
+    </div>
+
+    <div class="weight-total">
+      <span class="label">Total</span>
+      <span class="val" id="weightTotal">100%</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ripple" id="btnWeightsCancel">Cancel</button>
+      <button class="btn ripple primary" id="btnWeightsSave">Save Weights</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============= NORMALIZE MODAL ============= -->
+<div class="modal-backdrop" id="modalNormalize">
+  <div class="modal">
+    <h3>Normalize Names</h3>
+    <p class="sub">Standardizes capitalization and spacing. Review changes before applying.</p>
+
+    <div class="normalize-list" id="normalizeList"></div>
+
+    <div class="modal-actions">
+      <button class="btn ripple" id="btnNormalizeCancel">Cancel</button>
+      <button class="btn ripple primary" id="btnNormalizeSave">Apply Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============= TOAST ============= -->
+<div id="toastWrap"></div>
+
+<script>
+/* =====================================================================
+   Hot & Cold Assessment Mastery — Gradebook
+   Version: 3.1.0
+   ===================================================================== */
+
+const APP_VERSION = '3.1.0';
+
+/* ⚠️  REPLACE THIS with your deployed Google Apps Script /exec URL ⚠️ */
+const BACKEND_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
+
+/* ---------- Philippine Transmutation (1.00 – 5.00) ----------
+   Standard TSU / CHED-style bracket:
+     >= 96   → 1.00
+     >= 92   → 1.25
+     >= 88   → 1.50
+     >= 84   → 1.75
+     >= 80   → 2.00
+     >= 76   → 2.25
+     >= 72   → 2.50
+     >= 68   → 2.75
+     >= 64   → 3.00    (passing)
+     < 64    → 5.00    (failed)
+------------------------------------------------------------- */
+function transmute(pct){
+  if (pct === null || pct === undefined || isNaN(pct)) return null;
+  const p = Number(pct);
+  if (p >= 96) return 1.00;
+  if (p >= 92) return 1.25;
+  if (p >= 88) return 1.50;
+  if (p >= 84) return 1.75;
+  if (p >= 80) return 2.00;
+  if (p >= 76) return 2.25;
+  if (p >= 72) return 2.50;
+  if (p >= 68) return 2.75;
+  if (p >= 64) return 3.00;
+  return 5.00;
+}
+
+function gradeClass(g){
+  if (g === null) return '';
+  if (g <= 1.50) return 'g1';
+  if (g <= 2.00) return 'g2';
+  if (g <= 2.50) return 'g3';
+  if (g <= 3.00) return 'g4';
+  return 'g5';
+}
+
+/* ---------- State ---------- */
+let state = {
+  records: [],
+  weights: { units: 20, quiz: 40, games: 20, exam: 20 },
+  sortKey: 'fullName',
+  sortDir: 1,
+  normalizeMap: {}
+};
+
+/* ---------- Utils ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function num(v){
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(String(v).replace('%','').trim());
+  return isNaN(n) ? null : n;
+}
+function fmtPct(v){ return v === null ? '—' : v.toFixed(1) + '%'; }
+function fmtGrade(g){ return g === null ? '—' : g.toFixed(2); }
+
+/* Parse the JSON blob inside dataJson to extract games score if present */
+function extractGames(rec){
+  try{
+    if (!rec.dataJson) return null;
+    const d = typeof rec.dataJson === 'string' ? JSON.parse(rec.dataJson) : rec.dataJson;
+    if (d && d.games && typeof d.games.average === 'number') return d.games.average;
+    if (d && typeof d.gamesAvg === 'number') return d.gamesAvg;
+    return null;
+  }catch(e){ return null; }
+}
+
+/* Compute a full row view-model */
+function computeRow(rec){
+  const units    = num(rec.unitsCompleted);
+  const unitAvg  = num(rec.unitAvg);
+  const examPct  = num(rec.examPercentage);
+  const games    = extractGames(rec);
+
+  const w = state.weights;
+  let finalPct = null;
+  if (units !== null && unitAvg !== null && examPct !== null && games !== null){
+    finalPct =
+      units    * (w.units/100) +
+      unitAvg  * (w.quiz /100) +
+      games    * (w.games/100) +
+      examPct  * (w.exam /100);
+  }
+
+  const finalGrade = finalPct === null ? null : transmute(finalPct);
+
+  /* Validation */
+  const missing = [];
+  if (units   === null) missing.push('units');
+  if (unitAvg === null) missing.push('quiz');
+  if (games   === null) missing.push('games');
+  if (examPct === null) missing.push('exam');
+
+  let valStatus = 'ok';
+  let valLabel  = 'Complete';
+  if (missing.length === 4){
+    valStatus = 'bad'; valLabel = 'No data';
+  } else if (missing.length > 0){
+    valStatus = 'warn'; valLabel = 'Missing: ' + missing.join(', ');
+  } else if (finalGrade !== null && finalGrade > 3.00){
+    valStatus = 'bad'; valLabel = 'Failed';
+  }
+
+  const flag = Number(rec.integrityFlags || 0) > 0;
+
+  return {
+    raw: rec,
+    fullName: rec.fullName || '',
+    studentNo: rec.studentNo || '',
+    section: rec.section || '',
+    email: rec.email || '',
+    units, unitAvg, games, examPct,
+    finalPct, finalGrade,
+    valStatus, valLabel, flag,
+    missing
+  };
+}
+
+/* ---------- Toast ---------- */
+function toast(msg, kind='info', ms=2600){
+  const wrap = $('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + kind;
+  el.innerHTML = `<span class="dot"></span><span>${esc(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
+}
+
+/* ---------- Status bar ---------- */
+function setStatus(kind, text){
+  const dot = $('statusDot');
+  dot.className = 'status-dot ' + (kind || '');
+  $('statusText').innerHTML = text;
+}
+
+/* ---------- Ripple ---------- */
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.ripple');
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  const s = document.createElement('span');
+  s.className = 'rp';
+  const size = Math.max(r.width, r.height);
+  s.style.width = s.style.height = size + 'px';
+  s.style.left = (e.clientX - r.left - size/2) + 'px';
+  s.style.top  = (e.clientY - r.top  - size/2) + 'px';
+  btn.appendChild(s);
+  setTimeout(() => s.remove(), 620);
+});
+
+/* ---------- Load weights from localStorage ---------- */
+function loadWeights(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('hc_gradebook_weights') || 'null');
+    if (saved && typeof saved === 'object'){
+      state.weights = {
+        units: Number(saved.units) || 20,
+        quiz : Number(saved.quiz ) || 40,
+        games: Number(saved.games) || 20,
+        exam : Number(saved.exam ) || 20
+      };
+    }
+  }catch(e){}
+}
+function saveWeights(){
+  localStorage.setItem('hc_gradebook_weights', JSON.stringify(state.weights));
+}
+
+/* ---------- Backend ---------- */
+async function fetchAll(){
+  if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
+    toast('Set BACKEND_URL in this file first.', 'err', 5000);
+    setStatus('offline', '<strong>Backend URL not set.</strong> Edit BACKEND_URL in the file.');
+    return;
+  }
+  setStatus('loading', 'Syncing with backend…');
+  try{
+    const url = BACKEND_URL + (BACKEND_URL.includes('?') ? '&' : '?') + 'action=listAll&t=' + Date.now();
+    const res = await fetch(url, { method:'GET' });
+    const data = await res.json();
+    if (!data || !data.success){
+      setStatus('offline', 'Backend error: ' + (data && data.error || 'unknown'));
+      toast('Sync failed: ' + (data && data.error || 'unknown'), 'err');
+      return;
+    }
+    state.records = (data.records || []).map(computeRow);
+    renderTable();
+    setStatus('online', `<strong>Synced.</strong> ${state.records.length} record(s) loaded.`);
+    toast('Loaded ' + state.records.length + ' record(s).', 'ok');
+  }catch(err){
+    setStatus('offline', 'Offline or unreachable: ' + err.message);
+    toast('Sync failed: ' + err.message, 'err', 4000);
+  }
+}
+
+/* ---------- Render ---------- */
+function renderTable(){
+  const tbody = $('tableBody');
+  const thead = $('headRow');
+
+  /* Update header sort indicators */
+  thead.querySelectorAll('th.sortable').forEach(th => {
+    const active = th.dataset.key === state.sortKey;
+    th.classList.toggle('sorted', active);
+    const a = th.querySelector('.arrow');
+    if (a) a.textContent = active ? (state.sortDir > 0 ? '▲' : '▼') : '▼';
+  });
+
+  if (!state.records.length){
+    tbody.innerHTML = `<tr><td colspan="11" class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+      <p>No records yet. Ask students to Quick Submit, then press <strong>Sync</strong>.</p>
+    </td></tr>`;
+    $('tableFoot').style.display = 'none';
+    updateStatusChips();
+    return;
+  }
+
+  /* Sort */
+  const sorted = [...state.records].sort((a,b) => {
+    const k = state.sortKey;
+    let va = a[k], vb = b[k];
+    if (k === 'final'){ va = a.finalGrade; vb = b.finalGrade; }
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * state.sortDir;
+    va = String(va == null ? '' : va).toLowerCase();
+    vb = String(vb == null ? '' : vb).toLowerCase();
+    return va < vb ? -1 * state.sortDir : va > vb ? 1 * state.sortDir : 0;
+  });
+
+  /* Build rows */
+  tbody.innerHTML = sorted.map(r => {
+    const rowClass = r.flag ? 'row-flag' : '';
+    const gradeCls = gradeClass(r.finalGrade);
+    const gradeTxt = fmtGrade(r.finalGrade);
+
+    return `<tr class="${rowClass}">
+      <td class="name">${esc(r.fullName) || '—'}</td>
+      <td class="mono">${esc(r.studentNo) || '—'}</td>
+      <td>${esc(r.section) || '—'}</td>
+      <td class="mono">${esc(r.email) || '—'}</td>
+      <td>${fmtPct(r.units)}</td>
+      <td>${fmtPct(r.unitAvg)}</td>
+      <td>${fmtPct(r.games)}</td>
+      <td>${fmtPct(r.examPct)}</td>
+      <td>${fmtPct(r.finalPct)}</td>
+      <td class="grade ${gradeCls}">${gradeTxt}</td>
+      <td><span class="val-badge ${r.valStatus}">
+        ${r.valStatus === 'ok'
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>'}
+        ${esc(r.valLabel)}</span></td>
+    </tr>`;
+  }).join('');
+
+  /* Class averages */
+  const count = sorted.length;
+  const avgOf = (fn) => {
+    const vals = sorted.map(fn).filter(v => v !== null && !isNaN(v));
+    if (!vals.length) return null;
+    return vals.reduce((a,b)=>a+b,0) / vals.length;
+  };
+  const avgUnits   = avgOf(r => r.units);
+  const avgUnitAvg = avgOf(r => r.unitAvg);
+  const avgGames   = avgOf(r => r.games);
+  const avgExam    = avgOf(r => r.examPct);
+  const avgFinal   = avgOf(r => r.finalPct);
+  const avgGrade   = avgFinal === null ? null : transmute(avgFinal);
+
+  $('avgUnits').textContent   = fmtPct(avgUnits);
+  $('avgUnitAvg').textContent = fmtPct(avgUnitAvg);
+  $('avgGames').textContent   = fmtPct(avgGames);
+  $('avgExam').textContent    = fmtPct(avgExam);
+  $('avgFinal').textContent   = fmtPct(avgFinal);
+  $('avgGrade').innerHTML     = avgGrade === null
+      ? '—'
+      : `<span class="grade ${gradeClass(avgGrade)}">${avgGrade.toFixed(2)}</span>`;
+  $('tableFoot').style.display = '';
+
+  /* Info */
+  $('tableInfo').innerHTML = `<strong>${count}</strong> student${count!==1?'s':''} · Weights ${state.weights.units}/${state.weights.quiz}/${state.weights.games}/${state.weights.exam}`;
+
+  updateStatusChips();
+}
+
+function updateStatusChips(){
+  const n = state.records.length;
+  $('chipStudents').textContent = n + ' student' + (n!==1?'s':'');
+  const passCount = state.records.filter(r => r.finalGrade !== null && r.finalGrade <= 3.00).length;
+  $('chipPass').textContent = 'Passed: ' + passCount;
+  const finals = state.records.map(r=>r.finalPct).filter(v=>v!==null);
+  if (finals.length){
+    const avg = finals.reduce((a,b)=>a+b,0)/finals.length;
+    const g = transmute(avg);
+    $('chipAvg').textContent = 'Class Avg: ' + avg.toFixed(1) + '% · ' + (g?g.toFixed(2):'—');
+  } else {
+    $('chipAvg').textContent = 'Class Avg: —';
+  }
+}
+
+/* ---------- Sorting ---------- */
+$('headRow').addEventListener('click', (e) => {
+  const th = e.target.closest('th.sortable');
+  if (!th) return;
+  const k = th.dataset.key;
+  if (state.sortKey === k) state.sortDir *= -1;
+  else { state.sortKey = k; state.sortDir = 1; }
+  renderTable();
+});
+
+/* ---------- Weights modal ---------- */
+function openWeights(){
+  $('wUnits').value = state.weights.units;
+  $('wQuiz').value  = state.weights.quiz;
+  $('wGames').value = state.weights.games;
+  $('wExam').value  = state.weights.exam;
+  updateWeightTotal();
+  $('modalWeights').classList.add('open');
+}
+function updateWeightTotal(){
+  const total = ['wUnits','wQuiz','wGames','wExam']
+    .reduce((s,id) => s + (Number($(id).value) || 0), 0);
+  const el = $('weightTotal');
+  el.textContent = total + '%';
+  el.classList.toggle('bad', total !== 100);
+}
+['wUnits','wQuiz','wGames','wExam'].forEach(id => {
+  document.addEventListener('input', (e) => { if (e.target && e.target.id === id) updateWeightTotal(); });
+});
+$('btnWeights').addEventListener('click', openWeights);
+$('btnWeightsCancel').addEventListener('click', () => $('modalWeights').classList.remove('open'));
+$('btnWeightsSave').addEventListener('click', () => {
+  const total = ['wUnits','wQuiz','wGames','wExam'].reduce((s,id)=>s+(Number($(id).value)||0),0);
+  if (total !== 100){ toast('Weights must total 100%.', 'err'); return; }
+  state.weights = {
+    units: Number($('wUnits').value),
+    quiz : Number($('wQuiz').value),
+    games: Number($('wGames').value),
+    exam : Number($('wExam').value)
+  };
+  saveWeights();
+  state.records = state.records.map(computeRow);
+  renderTable();
+  $('modalWeights').classList.remove('open');
+  toast('Weights saved.', 'ok');
+});
+
+/* ---------- Normalize ---------- */
+function normalizeName(s){
+  if (!s) return '';
+  return String(s)
+    .replace(/\s+/g,' ')
+    .trim()
+    .split(' ')
+    .map(w => {
+      if (!w) return '';
+      if (w.includes('-')) return w.split('-').map(p => p ? p[0].toUpperCase() + p.slice(1).toLowerCase() : '').join('-');
+      return w[0].toUpperCase() + w.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
+$('btnNormalize').addEventListener('click', () => {
+  state.normalizeMap = {};
+  const list = $('normalizeList');
+  const changes = [];
+
+  state.records.forEach(r => {
+    const orig = r.raw.fullName || '';
+    const norm = normalizeName(orig);
+    if (orig && orig !== norm){
+      state.normalizeMap[r.raw.studentNo || r.raw.email || orig] = norm;
+      changes.push({ from: orig, to: norm });
+    }
+  });
+
+  if (!changes.length){
+    list.innerHTML = `<div class="norm-item" style="justify-content:center;color:var(--muted);">No changes needed — all names are already normalized. ✅</div>`;
+  } else {
+    list.innerHTML = changes.map(c =>
+      `<div class="norm-item">
+        <span class="from">${esc(c.from)}</span>
+        <span class="arrow">→</span>
+        <span class="to">${esc(c.to)}</span>
+      </div>`
+    ).join('');
+  }
+  $('modalNormalize').classList.add('open');
+});
+
+$('btnNormalizeCancel').addEventListener('click', () => $('modalNormalize').classList.remove('open'));
+$('btnNormalizeSave').addEventListener('click', () => {
+  let count = 0;
+  state.records = state.records.map(r => {
+    const key = r.raw.studentNo || r.raw.email || r.raw.fullName;
+    if (state.normalizeMap[key]){
+      r.raw.fullName = state.normalizeMap[key];
+      r.fullName = state.normalizeMap[key];
+      count++;
+    }
+    return r;
+  });
+  renderTable();
+  $('modalNormalize').classList.remove('open');
+  toast(count ? `Normalized ${count} name(s).` : 'No changes applied.', count ? 'ok' : 'info');
+});
+
+/* ---------- Print ---------- */
+$('btnPrint').addEventListener('click', () => window.print());
+
+/* ---------- Export CSV ---------- */
+$('btnExport').addEventListener('click', () => {
+  if (!state.records.length){ toast('Nothing to export.', 'err'); return; }
+  const cols = ['Student','StudentNo','Section','Email','Units%','UnitAvg%','Games%','Exam%','Final%','Grade','Validation'];
+  const rows = state.records.map(r => [
+    r.fullName, r.studentNo, r.section, r.email,
+    r.units ?? '', r.unitAvg ?? '', r.games ?? '', r.examPct ?? '',
+    r.finalPct !== null ? r.finalPct.toFixed(2) : '',
+    r.finalGrade !== null ? r.finalGrade.toFixed(2) : '',
+    r.valLabel
+  ]);
+
+  const csv = [cols, ...rows]
+    .map(row => row.map(v => {
+      const s = String(v == null ? '' : v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(','))
+    .join('\r\n');
+
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `HotCold_Gradebook_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast('CSV exported.', 'ok');
+});
+
+/* ---------- Sync button ---------- */
+$('btnSync').addEventListener('click', fetchAll);
+
+/* ---------- Click-backdrop closes modal ---------- */
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('open'); });
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+});
+
+/* ---------- Init ---------- */
+(function init(){
+  loadWeights();
+  $('chipStudents').textContent = '0 students';
+  setStatus('', 'Ready. Press <strong>Sync</strong> to load records.');
+  if (BACKEND_URL && !BACKEND_URL.includes('PASTE_')){
+    fetchAll();
+  } else {
+    setStatus('', 'Ready. <strong>Set BACKEND_URL</strong> then press Sync.');
+  }
+})();
+</script>
+</body>
+</html>
