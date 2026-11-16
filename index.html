@@ -564,6 +564,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .cert .sc .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
 .cert .sc .l{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
 .cert .sig{margin-top:26px;}
+@media print{.no-print{display:none !important;}}
 .cert .sig .line{width:240px;height:1px;background:var(--border-strong);margin:0 auto 8px;}
 .cert .sig .who{font-size:13px;font-weight:700;}
 .cert .sig .role{font-size:11.5px;color:var(--muted);}
@@ -823,6 +824,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         <input type="email" id="regEmail" placeholder="juan.delacruz@tsu.edu.ph" autocomplete="email" />
         <p class="hint">Use your official TSU email address</p>
       </div>
+      <div class="field">
+        <label>Clinical Instructor</label>
+        <input type="text" id="regCI" placeholder="e.g. JUAN DELA CRUZ, RN, MAN" autocomplete="off" />
+        <p class="hint">Name of your clinical instructor as it should appear on your certificate</p>
+      </div>
       <button class="btn primary block ripple" id="btnRegister" style="margin-top:6px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
         Register &amp; Start Learning
@@ -848,7 +854,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       </div>
       <div class="brand-txt">
         <h1>Hot &amp; Cold Mastery</h1>
-        <p>NCM 104 Lab · v<span id="sideVer">3.1.1</span></p>
+        <p>NCM 104 Lab · v<span id="sideVer">3.2.0</span></p>
       </div>
     </div>
 
@@ -1176,6 +1182,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
             </select>
           </div>
           <div class="field">
+            <label>Clinical Instructor</label>
+            <input type="text" id="pCI" placeholder="e.g. JUAN DELA CRUZ, RN, MAN" />
+          </div>
+          <div class="field">
             <label>TSU Email</label>
             <input type="email" id="pEmail" />
           </div>
@@ -1183,6 +1193,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
             <button class="btn primary ripple" id="btnSaveProfile">Save Changes</button>
             <button class="btn ripple" id="btnSubmitNow">Submit to Instructor</button>
           </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Sync Status</h3>
+        <p class="sub">Your progress is sent to your instructor automatically. If you were offline, it is re-sent once you're back online.</p>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;">
+          <span style="color:var(--muted);">Submission code</span><span id="pCode" style="font-family:monospace;color:var(--cold);">—</span>
+          <span style="color:var(--muted);">Last synced</span><span id="pLastSync">—</span>
+          <span style="color:var(--muted);">Status</span><span id="pSyncState">—</span>
         </div>
       </div>
 
@@ -1227,13 +1247,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <script>
 /* =====================================================================
    Hot & Cold Assessment Mastery — Student App
-   Version: 3.1.1
+   Version: 3.2.0
    Author:  JEMUEL C. MARI, MAN, RN, LPT
    ===================================================================== */
 
 /* ⚠️  REPLACE THIS with your deployed Apps Script /exec URL ⚠️ */
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '3.2.0';
 const MASTERY_THRESHOLD = 90;
 const EXAM_PASS_THRESHOLD = 75;
 
@@ -1602,6 +1622,7 @@ const UNITS = [
   }
 ];
 
+let EXAM_INTRO_HTML = '';
 const EXAM = [
   {q:'A patient twisted his ankle 30 minutes ago. Which therapy is indicated?', opts:['Warm compress','Cold application','Hot sitz bath','Heating pad'], a:1},
   {q:'Which physiologic effect is the goal of cold therapy in acute injury?', opts:['Vasodilation','Vasoconstriction','Increased metabolism','Muscle relaxation'], a:1},
@@ -1668,8 +1689,13 @@ let state = {
   units: {},
   games: {},
   exam: null,
+  examHistory: [],        // previous attempts (kept when a retake code is used)
+  examInProgress: null,   // saved after every answer so a reload cannot reset the exam
+  retakeRedeemedAt: null,
   activity: [],
-  lastSync: null
+  lastSync: null,
+  syncPending: false,
+  submissionCode: ''
 };
 
 let currentQuiz = null;
@@ -1765,9 +1791,15 @@ function gamesAvg(){
   if (!scores.length) return 0;
   return scores.reduce((a,b)=>a+b,0) / scores.length;
 }
+function examScoreText(ex){
+  ex = ex || state.exam;
+  if (!ex) return '—';
+  return ex.score + '/' + ex.total;
+}
 function examStatusText(){
+  if (state.examInProgress) return 'In progress';
   if (!state.exam) return 'Not yet taken';
-  return state.exam.passed ? 'PASSED ' + state.exam.pct + '%' : 'Failed ' + state.exam.pct + '%';
+  return (state.exam.passed ? 'PASSED · ' : 'Failed · ') + state.exam.pct + '%';
 }
 function overallProgress(){
   const uPart = unitsMastered() / UNITS.length;
@@ -1815,7 +1847,7 @@ function renderDashboard(){
   $('statUnits').textContent = unitsMastered() + ' / ' + UNITS.length;
   $('statAvg').textContent = Math.round(quizAvg()) + '%';
   $('statGames').textContent = Math.round(gamesBest()) + '%';
-  $('statExam').textContent = state.exam ? state.exam.pct + '%' : '—';
+  $('statExam').textContent = examScoreText();
   $('statExamHint').textContent = examStatusText();
 
   $('navUnitsBadge').textContent = unitsMastered() + '/' + UNITS.length;
@@ -2191,7 +2223,12 @@ $('btnPlayExit').addEventListener('click', () => {
 /* =====================================================================
    EXAM
    ===================================================================== */
-$('btnStartExam').addEventListener('click', () => {
+function bindExamIntro(){
+  const b = $('btnStartExam');
+  if (b) b.addEventListener('click', onStartExamClick);
+}
+function onStartExamClick(){
+  if (state.examInProgress){ resumeExam(); return; }
   if (state.exam){
     toast(state.exam.passed ? 'You already passed the exam.' : 'You already used your attempt.', 'err', 4000);
     return;
@@ -2208,15 +2245,49 @@ $('btnStartExam').addEventListener('click', () => {
     closeModal();
     beginExam();
   });
-});
+}
+EXAM_INTRO_HTML = $('examIntro').innerHTML;
+bindExamIntro();
 
 function beginExam(){
-  currentExam = { index:0, answers:[], correct:0, startTime: Date.now(), integrityFlags:0 };
+  currentExam = { index:0, answers:[], correct:0, startTime: Date.now(), integrityFlags:0, flagLog:[] };
+  persistExamProgress();
+  openExamPlay();
+}
+
+function persistExamProgress(){
+  state.examInProgress = currentExam ? JSON.parse(JSON.stringify(currentExam)) : null;
+  saveState();
+}
+
+function openExamPlay(){
   selectedAnswer = null;
   $('examIntro').classList.add('hidden');
   $('examPlay').classList.remove('hidden');
   renderExamQuestion();
 }
+
+/* Resume an exam interrupted by a reload / closed tab. Counts as an integrity flag. */
+function resumeExam(){
+  if (!state.examInProgress) return;
+  currentExam = state.examInProgress;
+  currentExam.integrityFlags = (currentExam.integrityFlags || 0) + 1;
+  (currentExam.flagLog = currentExam.flagLog || []).push({ type:'reload', at: nowISO(), q: currentExam.index + 1 });
+  persistExamProgress();
+  showView('exam');
+  openExamPlay();
+  toast('Exam resumed. Leaving or reloading during the exam is recorded.', 'err', 4500);
+}
+
+/* Integrity: switching tabs/apps during the exam is recorded */
+let pageUnloading = false;   // a reload is already counted on resume — don't count it twice
+window.addEventListener('pagehide', () => { pageUnloading = true; });
+document.addEventListener('visibilitychange', () => {
+  if (pageUnloading || !document.hidden || !currentExam || !state.examInProgress) return;
+  currentExam.integrityFlags = (currentExam.integrityFlags || 0) + 1;
+  (currentExam.flagLog = currentExam.flagLog || []).push({ type:'left-app', at: nowISO(), q: currentExam.index + 1 });
+  persistExamProgress();
+});
 
 function renderExamQuestion(){
   const { index } = currentExam;
@@ -2236,14 +2307,13 @@ function renderExamQuestion(){
           </button>`).join('')}
       </div>
       <div class="q-actions">
-        <span style="color:var(--muted);font-size:12px;align-self:center;">Answer is final — no going back.</span>
+        <span style="color:var(--muted);font-size:12px;align-self:center;">You can change your choice until you press Next. Answer is final after that.</span>
         <button class="btn primary sm ripple" id="btnExamNext" disabled>${index === EXAM.length-1 ? 'Finish Exam' : 'Next →'}</button>
       </div>
     </div>`;
   selectedAnswer = null;
   $('examOpts').querySelectorAll('.opt').forEach(b => {
     b.addEventListener('click', () => {
-      if (selectedAnswer !== null) return;
       selectedAnswer = Number(b.dataset.i);
       $('examOpts').querySelectorAll('.opt').forEach(bb => bb.classList.remove('selected'));
       b.classList.add('selected');
@@ -2251,52 +2321,104 @@ function renderExamQuestion(){
     });
   });
   $('btnExamNext').addEventListener('click', () => {
-    if (selectedAnswer === null) return;
+    if (selectedAnswer === null || !currentExam || currentExam.index !== index) return;
     const correct = selectedAnswer === q.a;
     if (correct) currentExam.correct++;
-    currentExam.answers.push({ selected: selectedAnswer, correct });
+    // Full item is stored so the instructor can print the student's actual exam
+    currentExam.answers.push({ n: index + 1, q: q.q, opts: q.opts, key: q.a, selected: selectedAnswer, correct });
     currentExam.index++;
     selectedAnswer = null;
+    persistExamProgress();
     if (currentExam.index >= EXAM.length) finishExam();
     else renderExamQuestion();
   });
 }
 
 function finishExam(){
-  const correct = currentExam.correct;
-  const pct = Math.round(correct / EXAM.length * 100);
+  const correct = currentExam.answers.filter(a => a.correct).length;
+  const total = EXAM.length;
+  const pct = Math.round(correct / total * 100);
   const passed = pct >= EXAM_PASS_THRESHOLD;
   const duration = Math.round((Date.now() - currentExam.startTime) / 1000);
 
   state.exam = {
+    attempt: (state.examHistory || []).length + 1,
     score: correct,
-    total: EXAM.length,
+    total,
     pct,
     passed,
+    startedAt: new Date(currentExam.startTime).toISOString(),
     takenAt: nowISO(),
     durationSec: duration,
-    integrityFlags: currentExam.integrityFlags || 0
+    integrityFlags: currentExam.integrityFlags || 0,
+    flagLog: currentExam.flagLog || [],
+    answers: currentExam.answers
   };
-  logActivity('Capstone Exam', pct + '%' + (passed ? ' (PASSED)' : ''));
+  currentExam = null;
+  state.examInProgress = null;
+  logActivity('Capstone Exam', `${correct}/${total} (${pct}%)` + (passed ? ' PASSED' : ''));
   saveState();
 
   $('examPlay').classList.add('hidden');
-  $('examIntro').classList.remove('hidden');
-  $('examIntro').innerHTML = `
+  renderExamResult();
+  renderDashboard();
+  autoSubmit();
+}
+
+/* Exam view when the exam is already taken: score + retake-code entry */
+function renderExamResult(){
+  const ex = state.exam;
+  const intro = $('examIntro');
+  intro.classList.remove('hidden');
+  if (!ex){ intro.innerHTML = EXAM_INTRO_HTML; bindExamIntro(); return; }
+  const passed = ex.passed;
+  intro.innerHTML = `
     <div class="big-badge" style="background:${passed ? 'var(--grad)' : 'linear-gradient(135deg,#FBBF24,#F87171)'};">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${passed
         ? '<path d="M20 6L9 17l-5-5"/>'
         : '<path d="M12 9v4"/><circle cx="12" cy="17" r="1" fill="currentColor"/>'}</svg>
     </div>
     <h2>${passed ? '🎉 Exam Passed!' : 'Exam Complete'}</h2>
-    <p>You scored <strong style="color:var(--text);font-size:20px;">${pct}%</strong> (${correct}/${EXAM.length}) · ${passed ? 'You are eligible for the Certificate of Completion.' : `A score of ${EXAM_PASS_THRESHOLD}% is required to pass. Please coordinate with your instructor regarding a retake.`}</p>
+    <p>Your score: <strong style="color:var(--text);font-size:22px;">${ex.score} / ${ex.total}</strong> (${ex.pct}%)${ex.attempt > 1 ? ' · Attempt ' + ex.attempt : ''}<br>
+      ${passed ? 'You are eligible for the Certificate of Completion (once all units are mastered).' : `A score of ${EXAM_PASS_THRESHOLD}% (${Math.ceil(ex.total * EXAM_PASS_THRESHOLD / 100)}/${ex.total}) is required to pass. Ask your instructor for a retake code.`}</p>
+    ${!passed ? `
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 14px;">
+        <input type="text" id="retakeCodeInput" placeholder="RTK-XXXXXX" autocomplete="off"
+          style="max-width:200px;text-transform:uppercase;font-family:monospace;text-align:center;" />
+        <button class="btn ripple" id="btnRedeemRetake">Use Retake Code</button>
+      </div>` : ''}
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button class="btn ripple" data-view="units">Back to Units</button>
       ${passed ? '<button class="btn primary ripple" data-view="certificate">View Certificate</button>' : ''}
     </div>`;
-  $('examIntro').querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
-  renderDashboard();
-  autoSubmit();
+  intro.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+  const rb = $('btnRedeemRetake');
+  if (rb) rb.addEventListener('click', redeemRetake);
+}
+
+async function redeemRetake(){
+  const code = ($('retakeCodeInput').value || '').trim().toUpperCase();
+  if (!/^RTK-[A-Z0-9]{6}$/.test(code)){ toast('Enter the retake code exactly as given (e.g. RTK-AB12CD).', 'err', 4000); return; }
+  if (!backendReady()){ toast('Backend not configured. Contact your instructor.', 'err'); return; }
+  const btn = $('btnRedeemRetake'); btn.disabled = true;
+  try{
+    const data = await api('redeemRetake', { studentNo: state.user.studentNo || '', email: state.user.email || '', retakeCode: code });
+    if (!data.success){ toast(data.error || 'Retake code rejected.', 'err', 4500); return; }
+    state.examHistory = state.examHistory || [];
+    state.examHistory.push(Object.assign({}, state.exam, { retakeCode: code }));
+    state.exam = null;
+    state.retakeRedeemedAt = nowISO();
+    logActivity('Retake unlocked', code);
+    saveState();
+    renderExamResult();
+    renderDashboard();
+    autoSubmit();
+    toast('Retake unlocked. You may now take the exam again.', 'ok', 4000);
+  }catch(err){
+    toast('Network error: ' + err.message, 'err', 4000);
+  }finally{
+    if ($('btnRedeemRetake')) $('btnRedeemRetake').disabled = false;
+  }
 }
 
 /* =====================================================================
@@ -2312,7 +2434,7 @@ function renderCertificate(){
         <p>Master all ${UNITS.length} units and pass the capstone exam (≥${EXAM_PASS_THRESHOLD}%) to unlock your Certificate of Completion.</p>
         <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
           <span class="pill ${unitsMastered()===UNITS.length?'ok':'warn'}">Units: ${unitsMastered()}/${UNITS.length}</span>
-          <span class="pill ${state.exam && state.exam.passed?'ok':'warn'}">Exam: ${state.exam ? state.exam.pct+'%' : '—'}</span>
+          <span class="pill ${state.exam && state.exam.passed?'ok':'warn'}">Exam: ${state.exam ? examScoreText() + ' (' + state.exam.pct + '%)' : '—'}</span>
         </div>
       </div>`;
     $('certSub').textContent = 'Complete all requirements to unlock.';
@@ -2337,15 +2459,17 @@ function renderCertificate(){
       <div class="scores">
         <div class="sc"><div class="v">${Math.round(quizAvg())}%</div><div class="l">Quiz Avg</div></div>
         <div class="sc"><div class="v">${Math.round(gamesBest())}%</div><div class="l">Games Best</div></div>
-        <div class="sc"><div class="v">${state.exam.pct}%</div><div class="l">Capstone</div></div>
+        <div class="sc"><div class="v">${examScoreText()}</div><div class="l">Capstone (${state.exam.pct}%)</div></div>
       </div>
 
       <div class="sig">
         <div class="line"></div>
-        <div class="who">JEMUEL C. MARI, MAN, RN, LPT</div>
+        <div class="who">${state.user.clinicalInstructor ? esc(state.user.clinicalInstructor) : '&nbsp;'}</div>
         <div class="role">Clinical Instructor · Tarlac State University</div>
         <div class="role" style="margin-top:8px;">Issued: ${dateStr}</div>
       </div>
+      ${state.user.clinicalInstructor ? '' : '<p class="meta no-print" style="margin-top:10px;color:var(--warn);">Tip: add your Clinical Instructor\'s name in Edit Profile so it prints on the certificate.</p>'}
+      <p class="meta" style="margin-top:14px;font-size:10.5px;opacity:.7;">App developed by JEMUEL C. MARI, MAN, RN, LPT</p>
     </div>`;
 }
 
@@ -2369,8 +2493,18 @@ function renderProfile(){
   $('pSection').value = state.user.section || '';
   $('pGroup').value   = state.user.group || '';
   $('pEmail').value   = state.user.email || '';
+  $('pCI').value      = state.user.clinicalInstructor || '';
   $('pSY').value      = state.user.schoolYear || '2026-2027';
   $('pSem').value     = state.user.semester || '1st Semester';
+  renderSyncInfo();
+}
+function renderSyncInfo(){
+  if (!$('pCode')) return;
+  $('pCode').textContent = state.submissionCode || '— (not yet synced)';
+  $('pLastSync').textContent = state.lastSync ? new Date(state.lastSync).toLocaleString() : 'Never';
+  $('pSyncState').innerHTML = state.syncPending
+    ? '<span style="color:var(--warn);">Waiting to sync…</span>'
+    : '<span style="color:var(--ok);">Up to date</span>';
 }
 
 $('btnSaveProfile').addEventListener('click', () => {
@@ -2386,12 +2520,14 @@ $('btnSaveProfile').addEventListener('click', () => {
     section:    $('pSection').value.trim(),
     group:      $('pGroup').value,
     email:      $('pEmail').value.trim(),
+    clinicalInstructor: $('pCI').value.trim(),
     schoolYear: $('pSY').value,
     semester:   $('pSem').value
   };
   saveState();
   renderUserUI();
   toast('Profile saved.', 'ok');
+  autoSubmit();
 });
 
 $('btnSubmitNow').addEventListener('click', () => {
@@ -2424,16 +2560,13 @@ $('btnSendFeedback').addEventListener('click', async () => {
     toast('Backend not configured. Contact your instructor.', 'err', 4000);
     return;
   }
-  const params = new URLSearchParams({
-    action:'sendFeedback',
-    studentName: state.user.fullName || '',
-    studentNo:   state.user.studentNo || '',
-    email:       state.user.email || '',
-    message:     msg
-  });
   try{
-    const res = await fetch(BACKEND_URL + '?' + params.toString(), { method:'GET' });
-    const data = await res.json();
+    const data = await api('sendFeedback', {
+      studentName: state.user.fullName || '',
+      studentNo:   state.user.studentNo || '',
+      email:       state.user.email || '',
+      message:     msg
+    });
     if (data && data.success){
       toast('Feedback sent. Thank you!', 'ok');
       $('fbMsg').value = '';
@@ -2446,14 +2579,47 @@ $('btnSendFeedback').addEventListener('click', async () => {
 });
 
 /* =====================================================================
+   BACKEND API
+   POST (form-encoded) is used instead of GET: the exam answers make the
+   payload too long for a URL, which made syncing silently fail before.
+   A form-encoded POST is a "simple" CORS request, so Apps Script accepts it.
+   ===================================================================== */
+function backendReady(){ return !!BACKEND_URL && !BACKEND_URL.includes('PASTE_'); }
+
+async function api(action, data = {}){
+  const body = new URLSearchParams();
+  body.set('action', action);
+  Object.keys(data).forEach(k => body.set(k, data[k] == null ? '' : String(data[k])));
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 30000);
+  try{
+    const res = await fetch(BACKEND_URL, { method:'POST', body, signal: ctrl.signal, redirect:'follow' });
+    const text = await res.text();
+    try{ return JSON.parse(text); }
+    catch(e){ throw new Error('Unexpected server reply. Make sure the Apps Script is deployed with access "Anyone".'); }
+  } catch(err){
+    if (err.name === 'AbortError') throw new Error('Request timed out');
+    throw err;
+  } finally { clearTimeout(timer); }
+}
+
+/* =====================================================================
    SUBMIT TO BACKEND
    ===================================================================== */
 let submitInFlight = false;
+let submitQueued = false;
 async function autoSubmit(manual = false){
-  if (submitInFlight) return;
   if (!state.user){ if (manual) toast('Please register first.', 'err'); return; }
-  if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
+  state.syncPending = true;
+  saveState();
+  if (!backendReady()){
     if (manual) toast('Backend URL not set in index.html.', 'err', 4500);
+    return;
+  }
+  if (submitInFlight){ submitQueued = true; return; }   // send again right after the current one
+  if (!navigator.onLine){
+    if (manual) toast('You are offline. Progress will sync automatically when you reconnect.', 'info', 4000);
+    renderSyncInfo();
     return;
   }
   submitInFlight = true;
@@ -2471,48 +2637,104 @@ async function autoSubmit(manual = false){
       best: gamesBest()
     },
     exam: state.exam,
+    examHistory: state.examHistory || [],
+    examInProgress: state.examInProgress ? { index: state.examInProgress.index, startTime: state.examInProgress.startTime, integrityFlags: state.examInProgress.integrityFlags } : null,
+    retakeRedeemedAt: state.retakeRedeemedAt,
+    clinicalInstructor: state.user.clinicalInstructor || '',
     quizAvg: Math.round(quizAvg()),
     overall: overallProgress(),
     totalQuizItems: totalItems,
     updatedAt: nowISO()
   };
 
-  const params = new URLSearchParams({
-    action: 'submit',
-    fullName:        state.user.fullName || '',
-    studentNo:       state.user.studentNo || '',
-    section:         state.user.section || '',
-    group:           state.user.group || '',
-    email:           state.user.email || '',
-    schoolYear:      state.user.schoolYear || '',
-    semester:        state.user.semester || '',
-    unitsCompleted:  unitsCompletedPct + '%',
-    unitAvg:         Math.round(quizAvg()) + '%',
-    examScore:       state.exam ? state.exam.score : '',
-    examTotal:       state.exam ? state.exam.total : '',
-    examPercentage:  state.exam ? state.exam.pct : '',
-    examPassed:      state.exam ? (state.exam.passed ? 'PASSED' : 'FAILED') : '',
-    integrityFlags:  state.exam ? (state.exam.integrityFlags || 0) : 0,
-    appVersion:      APP_VERSION,
-    dataJson:        JSON.stringify(dataBlob)
-  });
-
+  const ex = state.exam;
   try{
-    const res = await fetch(BACKEND_URL + '?' + params.toString(), { method:'GET' });
-    const data = await res.json();
+    const data = await api('submit', {
+      code:            state.submissionCode || '',
+      fullName:        state.user.fullName || '',
+      studentNo:       state.user.studentNo || '',
+      section:         state.user.section || '',
+      group:           state.user.group || '',
+      email:           state.user.email || '',
+      schoolYear:      state.user.schoolYear || '',
+      semester:        state.user.semester || '',
+      unitsCompleted:  unitsCompletedPct + '%',
+      unitAvg:         Math.round(quizAvg()) + '%',
+      examScore:       ex ? ex.score : '',
+      examTotal:       ex ? ex.total : '',
+      examPercentage:  ex ? ex.pct : '',
+      examPassed:      ex ? (ex.passed ? 'PASSED' : 'FAILED') : '',
+      integrityFlags:  ex ? (ex.integrityFlags || 0) : (state.examInProgress ? state.examInProgress.integrityFlags || 0 : 0),
+      appVersion:      APP_VERSION,
+      dataJson:        JSON.stringify(dataBlob)
+    });
     if (data && data.success){
       state.lastSync = nowISO();
+      state.syncPending = submitQueued;   // still pending if something changed meanwhile
+      if (data.code) state.submissionCode = data.code;
       saveState();
       if (manual) toast('Submitted ✓ Code: ' + (data.code || '—'), 'ok', 3500);
-      else toast('Progress auto-synced.', 'ok', 1800);
-    } else if (manual){
-      toast('Submit failed: ' + (data && data.error || 'unknown'), 'err', 4000);
+      else toast('Progress synced.', 'ok', 1600);
+    } else {
+      toast('Sync failed: ' + (data && data.error || 'unknown') + ' — will retry.', 'err', 4000);
     }
   }catch(err){
-    if (manual) toast('Network error: ' + err.message, 'err', 4000);
+    if (manual) toast('Network error: ' + err.message + ' — will retry automatically.', 'err', 4500);
   } finally {
     submitInFlight = false;
+    renderSyncInfo();
+    if (submitQueued){ submitQueued = false; autoSubmit(); }
   }
+}
+
+/* Retry pending syncs: when back online, when the app regains focus, and every 60 s */
+window.addEventListener('online', () => { if (state.syncPending) autoSubmit(); });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && state.syncPending && !currentExam) autoSubmit();
+});
+setInterval(() => { if (state.syncPending && !currentExam) autoSubmit(); }, 60000);
+
+/* Pull the server copy (e.g. new phone / cleared browser) so the exam
+   attempt and unit progress are not lost — and the exam cannot be retaken
+   just by switching devices. */
+async function restoreFromServer(){
+  if (!state.user || !backendReady() || !navigator.onLine) return;
+  try{
+    const data = await api('listByStudent', {
+      studentNo: state.user.studentNo || '', email: state.user.email || '',
+      schoolYear: state.user.schoolYear || '', semester: state.user.semester || ''
+    });
+    if (!data || !data.success || !data.record) return;
+    const rec = data.record;
+    if (rec.code && !state.submissionCode) state.submissionCode = rec.code;
+    let d = null;
+    try{ d = JSON.parse(rec.dataJson || '{}'); }catch(e){ d = null; }
+    let changed = false;
+    if (d){
+      // units: keep best of local vs server
+      Object.entries(d.units || {}).forEach(([id, u]) => {
+        const loc = state.units[id];
+        if (!loc || (u && u.best > (loc.best || 0))){ state.units[id] = u; changed = true; }
+      });
+      ['sortHotCold','safetyDrill'].forEach(k => {
+        const v = d.games && d.games[k];
+        if (typeof v === 'number' && v > (state.games[k] || 0)){ state.games[k] = v; changed = true; }
+      });
+      if ((!state.examHistory || !state.examHistory.length) && Array.isArray(d.examHistory) && d.examHistory.length){
+        state.examHistory = d.examHistory; changed = true;
+      }
+      const se = d.exam;
+      const redeemed = state.retakeRedeemedAt ? Date.parse(state.retakeRedeemedAt) : 0;
+      if (se && !state.exam && !state.examInProgress && Date.parse(se.takenAt || 0) > redeemed){
+        state.exam = se; changed = true;
+      }
+    }
+    saveState();
+    if (changed){
+      renderDashboard();
+      toast('Progress restored from your instructor record.', 'ok', 3000);
+    }
+  }catch(e){ /* silent: offline or backend not reachable */ }
 }
 
 /* =====================================================================
@@ -2538,11 +2760,9 @@ function showView(name){
   if (name === 'games')       renderGames();
   if (name === 'certificate') renderCertificate();
   if (name === 'profile')     renderProfile();
-  if (name === 'exam'){
-    if (state.exam && !currentExam){
-      $('examPlay').classList.add('hidden');
-      $('examIntro').classList.remove('hidden');
-    }
+  if (name === 'exam' && !currentExam){
+    $('examPlay').classList.add('hidden');
+    renderExamResult();
   }
   closeSidebar();
   window.scrollTo({ top: 0, behavior:'smooth' });
@@ -2619,13 +2839,14 @@ $('btnRegister').addEventListener('click', () => {
     section: sec,
     group: grp,
     email: em,
+    clinicalInstructor: $('regCI').value.trim(),
     schoolYear: sy,
     semester: sem
   };
   saveState();
   bootApp();
   toast('Welcome, ' + first + '!', 'ok');
-  setTimeout(() => autoSubmit(), 1500);
+  restoreFromServer().then(() => autoSubmit());
 });
 
 /* =====================================================================
@@ -2654,7 +2875,11 @@ function init(){
       }
     }).catch(()=>{});
   }
-  if (state.user) bootApp();
+  if (state.user){
+    bootApp();
+    if (state.examInProgress) resumeExam();
+    restoreFromServer().then(() => { if (state.syncPending || !state.lastSync) autoSubmit(); });
+  }
 }
 
 init();

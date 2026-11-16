@@ -1,6 +1,6 @@
 /* =====================================================================
    Hot & Cold Assessment Mastery — Service Worker
-   Version: 3.1.0
+   Version: 3.2.0
    =====================================================================
 
    INSTRUCTOR INSTRUCTIONS:
@@ -13,7 +13,7 @@
    - Major overhaul              → 4.0.0
    ===================================================================== */
 
-const APP_VERSION = '3.1.2';
+const APP_VERSION = '3.2.0';
 
 const CACHE_NAME    = `hc-mastery-v${APP_VERSION}`;
 const RUNTIME_CACHE = `hc-mastery-runtime-v${APP_VERSION}`;
@@ -73,7 +73,20 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (!url.protocol.startsWith('http')) return;
 
-  // --- CASE A: Cross-origin (Google Apps Script, CDNs, fonts) ---
+  // --- CASE A0: Backend (Apps Script) — always network, never cached ---
+  // Caching these filled storage with one entry per sync and could serve
+  // stale student records to the instructor.
+  if (url.hostname.includes('script.google.com') || url.hostname.includes('googleusercontent.com')) {
+    event.respondWith(
+      fetch(request).catch(() => new Response(
+        JSON.stringify({ success: false, error: 'Offline — unable to reach backend' }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      ))
+    );
+    return;
+  }
+
+  // --- CASE A: Cross-origin (CDNs, fonts) ---
   if (url.origin !== self.location.origin) {
     event.respondWith(
       fetch(request)
@@ -100,21 +113,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // --- CASE B: Same-origin HTML (stale-while-revalidate) ---
+  // --- CASE B: Same-origin HTML (network-first, cache fallback offline) ---
+  // Network-first so students get fixes on the next open instead of the one after.
   if (request.destination === 'document' || url.pathname.endsWith('.html')) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        const networkFetch = fetch(request)
-          .then((response) => {
-            if (response && response.status === 200) {
-              const clone = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone).catch(() => {}));
-            }
-            return response;
-          })
-          .catch(() => cached || caches.match('./index.html'));
-        return cached || networkFetch;
-      })
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone).catch(() => {}));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request, { ignoreSearch: true })
+          .then((cached) => cached || caches.match('./index.html')))
     );
     return;
   }

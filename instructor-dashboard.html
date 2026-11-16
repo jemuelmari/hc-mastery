@@ -445,6 +445,14 @@ td.right{text-align:right;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export CSV
     </button>
+    <button class="btn ripple" id="btnInstructor" title="Set the Clinical Instructor name printed on exams">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg>
+      <span id="ciBtnLabel">Instructor</span>
+    </button>
+    <button class="btn ripple" id="btnPrintExams" title="Print the answered exams of the students listed in the roster">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Print Exams
+    </button>
     <button class="btn ripple" id="btnPrint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print
@@ -537,7 +545,7 @@ td.right{text-align:right;}
           <th class="right">Units %</th>
           <th class="right">Quiz %</th>
           <th class="right">Games %</th>
-          <th class="right">Exam %</th>
+          <th class="right">Exam Score</th>
           <th>Status</th>
           <th style="text-align:right;">Actions</th>
         </tr>
@@ -576,12 +584,12 @@ td.right{text-align:right;}
 <script>
 /* =====================================================================
    Hot & Cold Assessment Mastery — Instructor Dashboard
-   Version: 3.1.1
+   Version: 3.2.0
    ===================================================================== */
 
 /* ⚠️  REPLACE with the SAME Apps Script /exec URL used elsewhere ⚠️ */
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '3.2.0';
 const EXAM_PASS_THRESHOLD = 75;
 
 /* ---- State ---- */
@@ -638,6 +646,32 @@ function closeModal(){ $('modalWrap').classList.remove('open'); }
 $('modalWrap').addEventListener('click', e => { if (e.target === $('modalWrap')) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+/* ---- Backend helpers ---- */
+function backendReady(){ return !!BACKEND_URL && !BACKEND_URL.includes('PASTE_'); }
+async function apiGet(action, extra = {}){
+  const qs = new URLSearchParams(Object.assign({ action, t: Date.now() }, extra));
+  const res = await fetch(BACKEND_URL + '?' + qs.toString());
+  const text = await res.text();
+  try{ return JSON.parse(text); }
+  catch(e){ throw new Error('Unexpected server reply. Check that the Apps Script is deployed with access "Anyone".'); }
+}
+async function apiPost(action, data = {}){
+  const body = new URLSearchParams(); body.set('action', action);
+  Object.keys(data).forEach(k => body.set(k, data[k] == null ? '' : String(data[k])));
+  const res = await fetch(BACKEND_URL, { method:'POST', body });
+  const text = await res.text();
+  try{ return JSON.parse(text); }
+  catch(e){ throw new Error('Unexpected server reply. Check that the Apps Script is deployed with access "Anyone".'); }
+}
+function parseData(rec){
+  if (!rec || !rec.dataJson) return null;
+  if (typeof rec.dataJson === 'object') return rec.dataJson;
+  try{ return JSON.parse(rec.dataJson); }catch(e){ return null; }
+}
+function scoreText(score, total){
+  return (score === null || total === null) ? '—' : `${score}/${total}`;
+}
+
 /* ---- Data loading ---- */
 function setStatus(kind, text){
   $('statusDot').className = 'status-dot ' + (kind || '');
@@ -653,8 +687,8 @@ async function fetchAll(){
   setStatus('loading', 'Syncing with backend…');
   try{
     const [subRes, fbRes] = await Promise.all([
-      fetch(BACKEND_URL + '?action=listAll&t=' + Date.now()).then(r => r.json()),
-      fetch(BACKEND_URL + '?action=listFeedback&t=' + Date.now()).then(r => r.json()).catch(() => ({ success:true, records:[] }))
+      apiGet('listAll'),
+      apiGet('listFeedback').catch(() => ({ success:true, records:[] }))
     ]);
 
     if (!subRes || !subRes.success){
@@ -677,7 +711,7 @@ async function fetchAll(){
 
 function extractGames(rec){
   try{
-    const d = typeof rec.dataJson === 'string' ? JSON.parse(rec.dataJson) : rec.dataJson;
+    const d = parseData(rec);
     if (!d) return null;
     if (d.games && typeof d.games.average === 'number') return d.games.average;
     if (typeof d.gamesAvg === 'number') return d.gamesAvg;
@@ -688,8 +722,15 @@ function extractGames(rec){
 function computeRow(rec){
   const units   = num(rec.unitsCompleted);
   const quiz    = num(rec.unitAvg);
-  const exam    = num(rec.examPercentage);
   const games   = extractGames(rec);
+  const data    = parseData(rec) || {};
+  const examObj = data.exam || null;
+  let examScore = num(rec.examScore);
+  let examTotal = num(rec.examTotal);
+  if (examScore === null && examObj && typeof examObj.score === 'number') examScore = examObj.score;
+  if (examTotal === null && examObj && typeof examObj.total === 'number') examTotal = examObj.total;
+  let exam      = num(rec.examPercentage);
+  if (exam === null && examScore !== null && examTotal) exam = Math.round(examScore / examTotal * 100);
 
   const examPassed = String(rec.examPassed || '').toUpperCase() === 'PASSED';
   const flags      = Number(rec.integrityFlags || 0);
@@ -699,18 +740,22 @@ function computeRow(rec){
   if (quiz !== null && quiz < 75) reasons.push('Quiz avg below 75%');
   if (units !== null && units < 80) reasons.push('Units below 80%');
   if (games !== null && games < 60) reasons.push('Games below 60%');
-  if (!rec.examPercentage && rec.examPercentage !== 0) reasons.push('Exam not yet taken');
+  if (exam === null) reasons.push('Exam not yet taken');
   if (flags > 0) reasons.push(flags + ' integrity flag(s)');
 
   const atRisk = reasons.length > 0;
 
   return {
+    id: state.records.indexOf(rec),          // stable key for buttons (works even if studentNo is numeric/blank)
     raw: rec,
-    fullName: rec.fullName || '',
-    studentNo: rec.studentNo || '',
-    section: rec.section || '',
-    email: rec.email || '',
+    fullName: String(rec.fullName ?? '').trim(),
+    studentNo: String(rec.studentNo ?? '').trim(),
+    section: String(rec.section ?? '').trim(),
+    email: String(rec.email ?? '').trim(),
     units, quiz, games, exam,
+    examScore, examTotal, examObj,
+    examHistory: Array.isArray(data.examHistory) ? data.examHistory : [],
+    ci: String(data.clinicalInstructor || '').trim(),
     examPassed,
     flags,
     atRisk, reasons
@@ -788,13 +833,12 @@ function renderAlerts(rows){
         <div class="nm">${esc(r.fullName || r.studentNo || 'Unknown')}</div>
         <div class="why">${esc(r.reasons.slice(0,2).join(' · '))}${r.reasons.length>2?' …':''}</div>
       </div>
-      <button class="btn sm ripple" data-alert="${esc(r.studentNo || r.email)}">View</button>
+      <button class="btn sm ripple" data-alert="${r.id}">View</button>
     </div>`).join('');
 
   list.querySelectorAll('[data-alert]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const key = btn.dataset.alert;
-      const r = rows.find(x => (x.studentNo || x.email) === key);
+      const r = rows.find(x => String(x.id) === btn.dataset.alert);
       if (r) openStudentModal(r);
     });
   });
@@ -840,14 +884,17 @@ function renderRoster(rows){
         <td class="right">${fmt(r.units,'%')}</td>
         <td class="right">${fmt(r.quiz,'%')}</td>
         <td class="right">${fmt(r.games,'%')}</td>
-        <td class="right">${fmt(r.exam,'%')}</td>
+        <td class="right" style="white-space:nowrap;">${r.exam === null ? '—' : `<strong>${scoreText(r.examScore, r.examTotal)}</strong> <span style="color:var(--muted);font-size:12px;">(${fmt(r.exam,'%')})</span>`}</td>
         <td>${statusBadge} ${flags}</td>
         <td>
           <div class="row-actions">
-            <button class="icon-btn" data-view-student="${esc(r.studentNo || r.email)}" title="View details">
+            <button class="icon-btn" data-view-student="${r.id}" title="View details">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-            <button class="icon-btn" data-retake="${esc(r.studentNo || r.email)}" title="Issue retake code">
+            <button class="icon-btn" data-print-exam="${r.id}" title="Print answered exam" ${r.examObj && Array.isArray(r.examObj.answers) && r.examObj.answers.length ? '' : 'disabled title="No recorded answers (exam not taken, or taken on an older app version)" style="opacity:.35;cursor:not-allowed;"'}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </button>
+            <button class="icon-btn" data-retake="${r.id}" title="Issue retake code">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
             </button>
           </div>
@@ -857,12 +904,19 @@ function renderRoster(rows){
 
   body.querySelectorAll('[data-view-student]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const r = rows.find(x => (x.studentNo || x.email) === btn.dataset.viewStudent);
+      const r = rows.find(x => String(x.id) === btn.dataset.viewStudent);
       if (r) openStudentModal(r);
     });
   });
   body.querySelectorAll('[data-retake]').forEach(btn => {
     btn.addEventListener('click', () => issueRetake(btn.dataset.retake));
+  });
+  body.querySelectorAll('[data-print-exam]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const r = rows.find(x => String(x.id) === btn.dataset.printExam);
+      if (r) printExams([{ row: r, exam: r.examObj }]);
+    });
   });
 }
 
@@ -891,7 +945,7 @@ function openStudentModal(r){
   const rec = r.raw;
   openModal(`
     <h3>${esc(r.fullName || 'Unknown Student')}</h3>
-    <p>${esc(r.studentNo)} · ${esc(r.section) || '—'} · ${esc(r.email) || '—'}</p>
+    <p>${esc(r.studentNo)} · ${esc(r.section) || '—'} · ${esc(r.email) || '—'}${r.ci ? '<br>Clinical Instructor (student-entered): ' + esc(r.ci) : ''}</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;">
       <div style="padding:14px;border-radius:12px;background:rgba(255,90,60,0.08);border:1px solid rgba(255,90,60,0.25);">
@@ -908,7 +962,8 @@ function openStudentModal(r){
       </div>
       <div style="padding:14px;border-radius:12px;background:rgba(255,90,60,0.08);border:1px solid rgba(255,90,60,0.25);">
         <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--hot);">Capstone Exam</div>
-        <div style="font-size:22px;font-weight:800;">${fmt(r.exam,'%')}</div>
+        <div style="font-size:22px;font-weight:800;">${r.exam === null ? '—' : scoreText(r.examScore, r.examTotal)}</div>
+        ${r.exam !== null ? `<div style="font-size:12px;color:var(--muted);">${fmt(r.exam,'%')} · ${r.examPassed ? 'PASSED' : 'FAILED'}${r.examObj && r.examObj.attempt > 1 ? ' · Attempt ' + r.examObj.attempt : ''}</div>` : ''}
       </div>
     </div>
 
@@ -924,11 +979,18 @@ function openStudentModal(r){
       <div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px;"><span>App version</span><span style="color:var(--text);">${esc(rec.appVersion || '—')}</span></div>
     </div>
 
+    ${examAttemptsHtml(r)}
+
     <div class="modal-actions">
       <button class="btn ripple" data-modal-close>Close</button>
-      <button class="btn primary ripple" data-retake-modal="${esc(r.studentNo || r.email)}">Issue Retake Code</button>
+      <button class="btn primary ripple" data-retake-modal="${r.id}">Issue Retake Code</button>
     </div>
   `);
+  $('modalBox').querySelectorAll('[data-print-attempt]').forEach(b => b.addEventListener('click', () => {
+    const idx = b.dataset.printAttempt;
+    const ex = idx === 'latest' ? r.examObj : r.examHistory[Number(idx)];
+    printExams([{ row: r, exam: ex }]);
+  }));
   $('modalBox').querySelector('[data-modal-close]')?.addEventListener('click', closeModal);
   $('modalBox').querySelector('[data-retake-modal]')?.addEventListener('click', (e) => {
     closeModal();
@@ -936,24 +998,16 @@ function openStudentModal(r){
   });
 }
 
-async function issueRetake(studentNoOrEmail){
-  if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')){
+async function issueRetake(rowId){
+  if (!backendReady()){
     toast('Backend URL not set.', 'err'); return;
   }
-  const r = state.records.map(computeRow).find(x =>
-    x.studentNo === studentNoOrEmail || x.email === studentNoOrEmail
-  );
+  const r = state.records.map(computeRow).find(x => String(x.id) === String(rowId));
   if (!r){ toast('Student not found.', 'err'); return; }
-
-  const params = new URLSearchParams({
-    action:'issueRetake',
-    studentNo: r.studentNo,
-    email: r.email
-  });
+  if (!r.studentNo){ toast('This student has no student number on record.', 'err', 4000); return; }
 
   try{
-    const res = await fetch(BACKEND_URL + '?' + params.toString(), { method:'GET' });
-    const data = await res.json();
+    const data = await apiPost('issueRetake', { studentNo: r.studentNo, email: r.email });
     if (data && data.success){
       openModal(`
         <h3>Retake Code Issued</h3>
@@ -981,12 +1035,284 @@ async function issueRetake(studentNoOrEmail){
   }
 }
 
+/* =====================================================================
+   PRINT ANSWERED EXAMS
+   Each submitted exam carries the items, the key and the student's choice,
+   so the printout shows exactly what the student saw and answered.
+   ===================================================================== */
+function examAttemptsHtml(r){
+  const items = [];
+  r.examHistory.forEach((ex, i) => items.push({ ex, idx: String(i), label: 'Attempt ' + (ex.attempt || i + 1) }));
+  if (r.examObj) items.push({ ex: r.examObj, idx: 'latest', label: (r.examHistory.length ? 'Attempt ' + (r.examObj.attempt || r.examHistory.length + 1) + ' (latest)' : 'Capstone exam') });
+  if (!items.length) return '';
+  return `
+    <div style="padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Exam attempts</div>
+      ${items.map(it => {
+        const has = Array.isArray(it.ex.answers) && it.ex.answers.length;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--border);">
+          <div style="font-size:13px;">
+            <strong>${esc(it.label)}</strong> — ${esc(it.ex.score)}/${esc(it.ex.total)} (${esc(it.ex.pct)}%) ${it.ex.passed ? '· PASSED' : '· FAILED'}
+            ${it.ex.takenAt ? `<div style="font-size:11.5px;color:var(--muted);">${esc(new Date(it.ex.takenAt).toLocaleString())}${it.ex.integrityFlags ? ' · ⚠ ' + esc(it.ex.integrityFlags) + ' integrity flag(s)' : ''}</div>` : ''}
+          </div>
+          ${has
+            ? `<button class="btn sm ripple" data-print-attempt="${it.idx}">Print Exam</button>`
+            : `<span style="font-size:11.5px;color:var(--muted);text-align:right;">Answers not recorded<br>(taken on an older app version)</span>`}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function fmtDuration(sec){
+  if (!sec && sec !== 0) return '—';
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m + ' min ' + s + ' sec';
+}
+
+function examPrintBody(row, ex){
+  const answers = (ex && Array.isArray(ex.answers)) ? ex.answers : [];
+  const wrong = answers.filter(a => !a.correct).map(a => a.n);
+  const L = 'ABCDEFGH';
+  return `
+  <section class="paper">
+    <header class="lh">
+      <div class="u">Republic of the Philippines</div>
+      <div class="u">TARLAC STATE UNIVERSITY</div>
+      <div class="c">COLLEGE OF SCIENCE · Department of Nursing</div>
+      <div class="t">NCM 104 (COMMUNITY HEALTH NURSING 1) · HOT &amp; COLD APPLICATION / HOT SITZ BATH</div>
+      <div class="t2">Capstone Examination — Student Answer Record${ex.attempt > 1 ? ' (Attempt ' + esc(ex.attempt) + ')' : ''}</div>
+    </header>
+
+    <table class="info">
+      <tr><td><b>Name:</b> ${esc(row.fullName)}</td><td><b>Student No.:</b> ${esc(row.studentNo)}</td></tr>
+      <tr><td><b>Year &amp; Section / Group:</b> ${esc(row.section)}${row.raw.group ? ' / ' + esc(row.raw.group) : ''}</td><td><b>Date taken:</b> ${ex.takenAt ? esc(new Date(ex.takenAt).toLocaleString()) : '—'}</td></tr>
+      <tr><td><b>School Year / Sem:</b> ${esc(row.raw.schoolYear || '—')} · ${esc(row.raw.semester || '—')}</td><td><b>Time spent:</b> ${esc(fmtDuration(ex.durationSec))}</td></tr>
+      <tr><td colspan="2"><b>Clinical Instructor:</b> <span class="ci-name" data-student-ci="${esc(row.ci || '')}" style="font-weight:400;"></span></td></tr>
+    </table>
+
+    <div class="scorebox ${ex.passed ? 'pass' : 'fail'}">
+      <div><span class="big">${esc(ex.score)} / ${esc(ex.total)}</span><span class="lbl">SCORE</span></div>
+      <div><span class="big">${esc(ex.pct)}%</span><span class="lbl">RATING</span></div>
+      <div><span class="big">${ex.passed ? 'PASSED' : 'FAILED'}</span><span class="lbl">REMARKS (passing ${EXAM_PASS_THRESHOLD}%)</span></div>
+      <div><span class="big">${esc(ex.integrityFlags || 0)}</span><span class="lbl">INTEGRITY FLAGS</span></div>
+    </div>
+    <p class="wrongline"><b>Items answered incorrectly (${wrong.length}):</b> ${wrong.length ? wrong.join(', ') : 'None'}</p>
+    <p class="legend"><span class="k ok">✓</span> student's correct answer &nbsp; <span class="k bad">✗</span> student's wrong answer &nbsp; <span class="k key">KEY</span> correct answer</p>
+
+    <ol class="items">
+      ${answers.map(a => `
+        <li class="item ${a.correct ? 'is-ok' : 'is-bad'}">
+          <div class="stem"><span class="no">${esc(a.n)}.</span> ${esc(a.q)} <span class="mark ${a.correct ? 'ok' : 'bad'}">${a.correct ? '✓ Correct' : '✗ Wrong'}</span></div>
+          <div class="opts">
+            ${(a.opts || []).map((o, i) => {
+              const isSel = i === a.selected, isKey = i === a.key;
+              const cls = isSel && isKey ? 'sel ok' : isSel ? 'sel bad' : isKey ? 'key' : '';
+              const tag = isSel && isKey ? '<span class="tag ok">✓ Student answer</span>'
+                        : isSel ? '<span class="tag bad">✗ Student answer</span>'
+                        : isKey ? '<span class="tag key">KEY</span>' : '';
+              return `<div class="opt ${cls}"><span class="ltr">${L[i]}.</span> <span class="txt">${esc(o)}</span> ${tag}</div>`;
+            }).join('')}
+          </div>
+        </li>`).join('')}
+    </ol>
+
+    <div class="sign">
+      <div><div class="line"></div>Student's Signature</div>
+      <div><div class="line"></div><span class="ci-name" data-student-ci="${esc(row.ci || '')}"></span><br><span class="ci-title"></span></div>
+    </div>
+  </section>`;
+}
+
+function printExams(list){
+  const valid = list.filter(x => x.exam && Array.isArray(x.exam.answers) && x.exam.answers.length);
+  if (!valid.length){
+    toast('No recorded exam answers to print. Students must take the exam on app v3.2.0 or later.', 'err', 5000);
+    return;
+  }
+  const title = valid.length === 1
+    ? `Exam_${valid[0].row.fullName.replace(/\s+/g,'_')}`
+    : `Exams_${valid.length}_students`;
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
+  <style>
+    @page{size:8.5in 13in;margin:0.55in 0.6in;}  /* replaced by the paper-size picker */
+    *{box-sizing:border-box;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:11pt;margin:0;}
+    .paper{page-break-after:always;}
+    .paper:last-child{page-break-after:auto;}
+    .lh{text-align:center;border-bottom:2px solid #444;padding-bottom:8px;margin-bottom:10px;}
+    .lh .u{font-size:11pt;color:#555;} .lh .u:nth-child(2){font-weight:700;color:#333;}
+    .lh .c{font-weight:700;font-size:11pt;margin-top:2px;}
+    .lh .t{font-weight:700;font-size:11pt;margin-top:8px;}
+    .lh .t2{font-weight:700;font-size:12pt;margin-top:2px;text-decoration:underline;}
+    table.info{width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:8px;}
+    table.info td{padding:3px 4px;vertical-align:top;}
+    .scorebox{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid #333;border-radius:6px;margin:6px 0 6px;}
+    .scorebox > div{text-align:center;padding:6px 4px;border-right:1px solid #999;}
+    .scorebox > div:last-child{border-right:none;}
+    .scorebox .big{display:block;font-size:16pt;font-weight:800;}
+    .scorebox .lbl{display:block;font-size:8pt;color:#555;letter-spacing:.05em;}
+    .scorebox.pass .big{color:#126b3a;} .scorebox.fail div:nth-child(3) .big{color:#b42318;}
+    .wrongline{margin:6px 0 2px;font-size:10.5pt;}
+    .legend{font-size:9.5pt;color:#444;margin:2px 0 10px;}
+    .k{display:inline-block;padding:0 5px;border-radius:3px;font-weight:700;}
+    .k.ok{background:#d9f2e3;color:#126b3a;} .k.bad{background:#fde2e0;color:#b42318;} .k.key{background:#fff1c2;color:#7a5600;}
+    ol.items{list-style:none;padding:0;margin:0;}
+    .item{break-inside:avoid;page-break-inside:avoid;padding:6px 8px;margin-bottom:6px;border-left:4px solid #ccc;}
+    .item.is-ok{border-left-color:#2e9e5b;} .item.is-bad{border-left-color:#d64545;background:#fff7f6;}
+    .stem{font-size:10.5pt;line-height:1.35;margin-bottom:3px;}
+    .stem .no{font-weight:700;}
+    .mark{font-size:8.5pt;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;white-space:nowrap;}
+    .mark.ok{background:#d9f2e3;color:#126b3a;} .mark.bad{background:#fde2e0;color:#b42318;}
+    .opts{padding-left:20px;}
+    .opt{font-size:10pt;line-height:1.35;padding:1px 4px;border-radius:3px;}
+    .opt .ltr{font-weight:700;display:inline-block;width:16px;}
+    .opt.sel.ok{background:#d9f2e3;font-weight:700;}
+    .opt.sel.bad{background:#fde2e0;font-weight:700;text-decoration:line-through;text-decoration-color:#b42318;}
+    .opt.key{background:#fff1c2;font-weight:700;}
+    .tag{font-size:8pt;font-weight:700;margin-left:4px;white-space:nowrap;text-decoration:none;display:inline-block;}
+    .tag.ok{color:#126b3a;} .tag.bad{color:#b42318;} .tag.key{color:#7a5600;}
+    .sign{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:28px;text-align:center;font-size:10pt;break-inside:avoid;}
+    .sign .line{border-top:1px solid #333;margin:28px 10px 4px;}
+    .sign span{color:#555;font-size:9pt;}
+    .toolbar{position:sticky;top:0;background:#f4f4f4;border-bottom:1px solid #ddd;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;z-index:2;}
+    .ci-name{font-weight:700;} .ci-name.blank{display:inline-block;min-width:220px;}
+    .toolbar button{padding:6px 14px;font-size:13px;cursor:pointer;}
+    @media screen{body{background:#e9e9e9;} .paper{background:#fff;max-width:8.5in;margin:14px auto;padding:0.5in 0.6in;box-shadow:0 1px 6px rgba(0,0,0,.15);}}
+    @media print{.toolbar{display:none;} *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  </style></head><body>
+  <style id="pageSize"></style>
+  <div class="toolbar">
+    <label for="paper"><b>Paper size:</b></label>
+    <select id="paper">
+      ${PAPER_SIZES.map(p => `<option value="${p.id}">${p.label}</option>`).join('')}
+    </select>
+    <label for="ciName"><b>Clinical Instructor:</b></label>
+    <input id="ciName" type="text" placeholder="Name, credentials (blank = student's CI)" style="width:260px;padding:5px 7px;">
+    <input id="ciTitle" type="text" placeholder="Position" style="width:200px;padding:5px 7px;">
+    <button id="btnDoPrint">🖨 Print</button>
+    <span style="flex-basis:100%;color:#555;">${valid.length} exam(s) · Turn on "Background graphics" in the print dialog to print the colors.</span>
+  </div>
+  ${valid.map(x => examPrintBody(x.row, x.exam)).join('')}
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w){ toast('Pop-up blocked. Please allow pop-ups for this site, then try again.', 'err', 5000); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+
+  // Paper-size picker (remembered for next time)
+  const doc = w.document;
+  const sel = doc.getElementById('paper');
+  const apply = () => {
+    const p = PAPER_SIZES.find(x => x.id === sel.value) || PAPER_SIZES[0];
+    doc.getElementById('pageSize').textContent =
+      `@page{size:${p.w} ${p.h};margin:${p.m};} @media screen{.paper{max-width:${p.w};min-height:${p.h};}}`;
+    try{ localStorage.setItem('hc_print_paper', p.id); }catch(e){}
+  };
+  let saved = 'long';
+  try{ saved = localStorage.getItem('hc_print_paper') || 'long'; }catch(e){}
+  sel.value = PAPER_SIZES.some(p => p.id === saved) ? saved : 'long';
+  sel.addEventListener('change', apply);
+  apply();
+
+  // Clinical Instructor signatory (shared with the dashboard setting)
+  const ciName = doc.getElementById('ciName'), ciTitle = doc.getElementById('ciTitle');
+  const ci = getCI();
+  ciName.value = ci.name; ciTitle.value = ci.title;
+  const applyCI = () => {
+    doc.querySelectorAll('.ci-name').forEach(el => {
+      const v = ciName.value.trim() || el.dataset.studentCi || '';
+      el.textContent = v || '\u00a0';
+      el.classList.toggle('blank', !v);
+    });
+    doc.querySelectorAll('.ci-title').forEach(el => el.textContent = ciTitle.value.trim() || 'Clinical Instructor');
+    saveCI(ciName.value.trim(), ciTitle.value.trim());
+  };
+  ciName.addEventListener('input', applyCI);
+  ciTitle.addEventListener('input', applyCI);
+  applyCI();
+  doc.getElementById('btnDoPrint').addEventListener('click', () => w.print());
+  w.focus();
+}
+
+/* ---- Clinical Instructor (saved on this device) ---- */
+function getCI(){
+  let name = '', title = 'Clinical Instructor';
+  try{
+    name  = localStorage.getItem('hc_ci_name') || '';
+    title = localStorage.getItem('hc_ci_title') || 'Clinical Instructor';
+  }catch(e){}
+  return { name, title };
+}
+function saveCI(name, title){
+  try{
+    localStorage.setItem('hc_ci_name', name || '');
+    localStorage.setItem('hc_ci_title', title || 'Clinical Instructor');
+  }catch(e){}
+  renderCILabel();
+}
+function renderCILabel(){
+  const { name } = getCI();
+  const el = $('ciBtnLabel');
+  if (el) el.textContent = name ? name.split(',')[0] : 'Instructor';
+}
+function openCIModal(){
+  const ci = getCI();
+  openModal(`
+    <h3>Clinical Instructor</h3>
+    <p>This name is printed as the signatory on the students' exam printouts. It is saved on this device only, so each instructor can set their own.</p>
+    <div style="display:grid;gap:10px;margin-bottom:6px;">
+      <label style="font-size:12px;font-weight:700;color:var(--muted);">Name with credentials
+        <input type="text" class="search-input" id="ciInName" value="${esc(ci.name)}" placeholder="e.g. JUAN DELA CRUZ, MAN, RN" style="width:100%;margin-top:4px;" />
+      </label>
+      <label style="font-size:12px;font-weight:700;color:var(--muted);">Position
+        <input type="text" class="search-input" id="ciInTitle" value="${esc(ci.title)}" placeholder="Clinical Instructor" style="width:100%;margin-top:4px;" />
+      </label>
+      <div style="font-size:12px;color:var(--muted);">Leave the name blank to print each student's own Clinical Instructor (from the student's profile), if they entered one.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ripple" data-modal-close>Cancel</button>
+      <button class="btn primary ripple" id="ciSave">Save</button>
+    </div>`);
+  $('modalBox').querySelector('[data-modal-close]').addEventListener('click', closeModal);
+  $('ciSave').addEventListener('click', () => {
+    saveCI($('ciInName').value.trim(), $('ciInTitle').value.trim());
+    closeModal();
+    toast('Clinical Instructor saved.', 'ok');
+  });
+  setTimeout(() => $('ciInName').focus(), 50);
+}
+$('btnInstructor').addEventListener('click', openCIModal);
+renderCILabel();
+
+const PAPER_SIZES = [
+  { id:'long',   label:'Long bond — 8.5" × 13"',      w:'8.5in', h:'13in',    m:'0.55in 0.6in' },
+  { id:'short',  label:'Short bond / Letter — 8.5" × 11"', w:'8.5in', h:'11in', m:'0.5in 0.55in' },
+  { id:'a4',     label:'A4 — 210 × 297 mm',           w:'210mm', h:'297mm',   m:'13mm 14mm' },
+  { id:'legal',  label:'Legal — 8.5" × 14"',          w:'8.5in', h:'14in',    m:'0.55in 0.6in' }
+];
+
+$('btnPrintExams').addEventListener('click', () => {
+  if (!state.records.length){ toast('Sync first to load student records.', 'err'); return; }
+  // print the students currently shown in the roster (respects search and filter)
+  let rows = state.records.map(computeRow).filter(r => r.fullName || r.studentNo);
+  if (state.filter === 'risk')   rows = rows.filter(r => r.atRisk);
+  if (state.filter === 'passed') rows = rows.filter(r => r.examPassed);
+  const q = state.search.toLowerCase().trim();
+  if (q) rows = rows.filter(r => [r.fullName, r.studentNo, r.section, r.email].some(v => (v||'').toLowerCase().includes(q)));
+  rows.sort((a,b) => (a.section||'').localeCompare(b.section||'') || (a.fullName||'').localeCompare(b.fullName||''));
+  printExams(rows.map(r => ({ row: r, exam: r.examObj })));
+});
+
 let qrScanner = null;
 $('btnScanQR').addEventListener('click', () => {
   openModal(`
     <h3>Scan Student QR</h3>
     <p>Point the camera at the student's submission QR. Align inside the frame.</p>
     <div id="qrReader"></div>
+    <div style="display:flex;gap:8px;margin:4px 0 10px;">
+      <input type="text" class="search-input" id="manualCode" placeholder="…or type the submission code (HC-…)" style="flex:1;" />
+      <button class="btn sm ripple" id="btnManualCode">Look up</button>
+    </div>
     <div id="scanResult"></div>
     <div class="modal-actions">
       <button class="btn danger ripple" data-modal-close>Stop</button>
@@ -995,6 +1321,10 @@ $('btnScanQR').addEventListener('click', () => {
   $('modalBox').querySelector('[data-modal-close]')?.addEventListener('click', () => {
     stopScanner();
     closeModal();
+  });
+  $('btnManualCode').addEventListener('click', () => {
+    const c = $('manualCode').value.trim();
+    if (c){ stopScanner(); handleScan(c); }
   });
   setTimeout(startScanner, 200);
 });
@@ -1039,8 +1369,7 @@ async function handleScan(text){
   if (!BACKEND_URL || BACKEND_URL.includes('PASTE_')) return;
 
   try{
-    const res = await fetch(BACKEND_URL + '?action=listByCode&code=' + encodeURIComponent(code));
-    const data = await res.json();
+    const data = await apiGet('listByCode', { code });
     if (!data || !data.success){
       $('scanResult').innerHTML = `<div class="scan-result" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.30);">
         <h4>❌ Not found</h4>
@@ -1057,7 +1386,7 @@ async function handleScan(text){
           <span class="k">Section</span><span class="v">${esc(rec.section || '—')}</span>
           <span class="k">Units</span><span class="v">${esc(rec.unitsCompleted || '—')}</span>
           <span class="k">Quiz Avg</span><span class="v">${esc(rec.unitAvg || '—')}</span>
-          <span class="k">Exam</span><span class="v">${esc(rec.examPercentage || '—')}%</span>
+          <span class="k">Exam</span><span class="v">${rec.examScore !== '' && rec.examScore != null ? esc(rec.examScore + '/' + rec.examTotal) + ' (' + esc(rec.examPercentage) + '%)' : '—'}</span>
           <span class="k">Status</span><span class="v">${esc(rec.examPassed || '—')}</span>
         </div>
       </div>`;
@@ -1072,10 +1401,10 @@ async function handleScan(text){
 $('btnCSV').addEventListener('click', () => {
   if (!state.records.length){ toast('Nothing to export.', 'err'); return; }
   const rows = state.records.map(computeRow);
-  const cols = ['Student','StudentNo','Section','Email','Units%','Quiz%','Games%','Exam%','ExamStatus','Flags','Code','Timestamp'];
+  const cols = ['Student','StudentNo','Section','Email','Units%','Quiz%','Games%','ExamScore','ExamItems','Exam%','ExamStatus','Flags','Code','Timestamp'];
   const csv = [cols, ...rows.map(r => [
     r.fullName, r.studentNo, r.section, r.email,
-    r.units ?? '', r.quiz ?? '', r.games ?? '', r.exam ?? '',
+    r.units ?? '', r.quiz ?? '', r.games ?? '', r.examScore ?? '', r.examTotal ?? '', r.exam ?? '',
     r.examPassed ? 'PASSED' : (r.exam !== null ? 'FAILED' : 'NOT TAKEN'),
     r.flags, r.raw.code || '', r.raw.timestamp || ''
   ])].map(row => row.map(v => {
@@ -1101,14 +1430,21 @@ $('searchInput').addEventListener('input', (e) => {
   state.search = e.target.value;
   renderRoster(state.records.map(computeRow));
 });
-$('btnFilterAll').addEventListener('click', () => { state.filter = 'all';    renderRoster(state.records.map(computeRow)); });
-$('btnFilterRisk').addEventListener('click', () => { state.filter = 'risk';   renderRoster(state.records.map(computeRow)); });
-$('btnFilterPassed').addEventListener('click', () => { state.filter = 'passed'; renderRoster(state.records.map(computeRow)); });
+function setFilter(f){
+  state.filter = f;
+  [['all','btnFilterAll'],['risk','btnFilterRisk'],['passed','btnFilterPassed']]
+    .forEach(([k,id]) => $(id).classList.toggle('primary', k === f));
+  renderRoster(state.records.map(computeRow));
+}
+$('btnFilterAll').addEventListener('click', () => setFilter('all'));
+$('btnFilterRisk').addEventListener('click', () => setFilter('risk'));
+$('btnFilterPassed').addEventListener('click', () => setFilter('passed'));
+$('btnFilterAll').classList.add('primary');
 
 $('btnSync').addEventListener('click', fetchAll);
 
 (function init(){
-  if (BACKEND_URL && !BACKEND_URL.includes('PASTE_')){
+  if (backendReady()){
     setStatus('loading', 'Auto-syncing…');
     fetchAll();
   } else {
