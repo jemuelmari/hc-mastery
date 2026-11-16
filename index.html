@@ -136,6 +136,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .nav-label{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);padding:8px 12px 4px;}
 
 .side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+.dev-credit{text-align:center;line-height:1.45;padding:18px 12px 6px;color:var(--muted);}
+.dev-credit .lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin-bottom:4px;}
+.dev-credit .nm{font-size:13.5px;font-weight:800;color:var(--text);letter-spacing:.01em;}
+.dev-credit .rl{font-size:12px;}
+.app-footer{margin-top:28px;border-top:1px solid var(--border);padding-top:6px;}
+@media print{.app-footer{display:none !important;}}
 .side-user{
   display:flex;align-items:center;gap:10px;padding:10px 12px;
   border-radius:var(--radius-sm);background:var(--glass);
@@ -836,6 +842,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:10px;">
         Your data is stored on this device and auto-submitted to your instructor.
       </p>
+      <div class="dev-credit">
+  <div class="lbl">Developed by</div>
+  <div class="nm">JEMUEL C. MARI, MAN, RN, LPT</div>
+  <div class="rl">Teacher V</div>
+  <div class="rl">Clinical Instructor - Department of Nursing</div>
+  <div class="rl">Tarlac State University</div>
+</div>
     </div>
   </div>
 </div>
@@ -1235,6 +1248,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       </div>
     </section>
 
+    <footer class="app-footer">
+      <div class="dev-credit">
+  <div class="lbl">Developed by</div>
+  <div class="nm">JEMUEL C. MARI, MAN, RN, LPT</div>
+  <div class="rl">Teacher V</div>
+  <div class="rl">Clinical Instructor - Department of Nursing</div>
+  <div class="rl">Tarlac State University</div>
+</div>
+    </footer>
   </main>
 </div>
 

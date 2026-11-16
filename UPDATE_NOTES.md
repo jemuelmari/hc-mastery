@@ -85,3 +85,6 @@ Exams taken on v3.1.x did not save the answers, so those can't be printed item b
   Follows the Section / Group / School Year / Semester filters. Buttons: **Show in roster**,
   **Copy list** (ready to paste in the class GC), **Print list** (with paper size and CI signature).
   Only students who registered in the app appear; a student who never opened the app is not in the records.
+- Developer credit on the student app (registration screen and the bottom of every page):
+  JEMUEL C. MARI, MAN, RN, LPT · Teacher V · Clinical Instructor - Department of Nursing · Tarlac State University.
+  About page and manifest updated to the same title.
