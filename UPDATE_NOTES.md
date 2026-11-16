@@ -61,3 +61,21 @@ Exams taken on v3.1.x did not save the answers, so those can't be printed item b
     Leave the name blank to use each student's own CI (from the student's profile).
   - Students can enter their Clinical Instructor at registration or in Edit Profile; it appears on their
     Certificate of Completion. The certificate keeps a small "App developed by JEMUEL C. MARI, MAN, RN, LPT" credit.
+
+## v3.2.1
+
+- **Organized Instructor Dashboard.** Filters for Section, Group, School Year, Semester and Exam
+  Status (Passed / Failed / Not yet taken / At risk / With integrity flags / Used a retake), plus search.
+  Each filter list only shows values that exist for the other filters chosen.
+  - **Arrange by** Section, Section → Group, Group, or no grouping. Each group has a summary line
+    (students, exam taken, passed, average exam score, at risk).
+  - New **Group** column. Click any column header to sort (click again to reverse).
+  - Stats, chart and at-risk alerts follow the Section / Group / School Year / Semester filters.
+  - Filters are remembered on that device. **Print Exams** and **Export CSV** use the students currently shown.
+- **Older exams (taken on v3.1) can now be printed without a retake.** v3.1 saved only the score, so
+  the student's individual choices cannot be recovered. The exam was the same fixed 30 items in the same
+  order for everyone, so the printout shows the exact exam taken, the answer key and the student's
+  score, with a note that the choices were not recorded.
+- The exam items now live in `exam-bank.js`, shared by the student app and the dashboard.
+  Edit questions there only, and keep the order of items that students already answered.
+- Fixed the Class Analytics chart: the 50% and 75% guide lines were swapped.

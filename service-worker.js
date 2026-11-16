@@ -1,6 +1,6 @@
 /* =====================================================================
    Hot & Cold Assessment Mastery — Service Worker
-   Version: 3.2.0
+   Version: 3.2.1
    =====================================================================
 
    INSTRUCTOR INSTRUCTIONS:
@@ -13,7 +13,7 @@
    - Major overhaul              → 4.0.0
    ===================================================================== */
 
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.2.1';
 
 const CACHE_NAME    = `hc-mastery-v${APP_VERSION}`;
 const RUNTIME_CACHE = `hc-mastery-runtime-v${APP_VERSION}`;
@@ -26,6 +26,7 @@ const PRECACHE_ASSETS = [
   './gradebook.html',
   './manifest.json',
   './icon.svg',
+  './exam-bank.js',
 ];
 
 /* 1. INSTALL */

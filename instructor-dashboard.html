@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+<script src="./exam-bank.js"></script>
 
 <style>
 :root{
@@ -262,6 +263,32 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .search-input:focus{outline:none;border-color:var(--cold);box-shadow:0 0 0 3px rgba(34,211,238,0.14);}
 
+.filter-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;}
+.filter-bar .fld{display:flex;flex-direction:column;gap:4px;}
+.filter-bar label{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.filter-bar select{
+  padding:9px 12px;border-radius:12px;background:rgba(255,255,255,0.04);color:var(--text);
+  border:1px solid var(--border);font-family:inherit;font-size:13px;font-weight:600;
+}
+.filter-bar select:focus{outline:none;border-color:var(--cold);}
+.filter-bar select.on{border-color:var(--cold);background:rgba(34,211,238,0.08);}
+.filter-bar select option{background:#161B22;color:var(--text);}
+.roster-info{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font-size:12.5px;color:var(--muted);}
+.roster-info strong{color:var(--text);}
+.roster-info .spacer{flex:1;}
+.scope-note{font-size:12px;color:var(--muted);margin:-6px 0 14px;}
+.scope-note strong{color:var(--cold);}
+thead th.sortable{cursor:pointer;user-select:none;}
+thead th.sortable:hover{color:var(--text);}
+thead th.sortable .arr{opacity:.35;margin-left:3px;font-size:9px;}
+thead th.sortable.sorted{color:var(--cold);}
+thead th.sortable.sorted .arr{opacity:1;}
+tbody tr.grp td{
+  background:rgba(34,211,238,0.06);border-top:1px solid rgba(34,211,238,0.25);
+  font-size:12px;color:var(--muted);padding:9px 10px;white-space:normal;
+}
+tbody tr.grp td strong{color:var(--cold);font-size:13px;margin-right:8px;}
+tbody tr.grp .gstat{display:inline-block;margin-right:14px;}
 .roster-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:880px;}
 thead th{
@@ -498,6 +525,8 @@ td.right{text-align:right;}
   </div>
 </div>
 
+<p class="scope-note" id="scopeNote"></p>
+
 <!-- ============= ANALYTICS + ALERTS ============= -->
 <div class="cols">
   <div class="card">
@@ -529,29 +558,58 @@ td.right{text-align:right;}
   <p class="sub">Live student records from the backend.</p>
 
   <div class="search-row">
-    <input type="text" class="search-input" id="searchInput" placeholder="Search by name, student no., section, or email…" />
-    <button class="btn ripple sm" id="btnFilterAll">All</button>
-    <button class="btn ripple sm" id="btnFilterRisk">At Risk</button>
-    <button class="btn ripple sm" id="btnFilterPassed">Passed</button>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search by name, student no., section, group, or email…" />
+    <button class="btn ripple sm" id="btnClearFilters" title="Reset all filters">Clear filters</button>
+  </div>
+
+  <div class="filter-bar">
+    <div class="fld"><label for="fSection">Section</label><select id="fSection"><option value="">All sections</option></select></div>
+    <div class="fld"><label for="fGroup">Group</label><select id="fGroup"><option value="">All groups</option></select></div>
+    <div class="fld"><label for="fSY">School Year</label><select id="fSY"><option value="">All school years</option></select></div>
+    <div class="fld"><label for="fSem">Semester</label><select id="fSem"><option value="">All semesters</option></select></div>
+    <div class="fld"><label for="fStatus">Exam Status</label>
+      <select id="fStatus">
+        <option value="all">All students</option>
+        <option value="passed">Passed</option>
+        <option value="failed">Failed</option>
+        <option value="nottaken">Not yet taken</option>
+        <option value="risk">At risk</option>
+        <option value="flagged">With integrity flags</option>
+        <option value="retake">Used a retake</option>
+      </select></div>
+    <div class="fld"><label for="fGroupBy">Arrange by</label>
+      <select id="fGroupBy">
+        <option value="section">Section</option>
+        <option value="sectiongroup">Section → Group</option>
+        <option value="group">Group</option>
+        <option value="none">No grouping</option>
+      </select></div>
+  </div>
+
+  <div class="roster-info">
+    <span id="rosterCount">—</span>
+    <span class="spacer"></span>
+    <span>Print Exams and Export CSV use the students shown here.</span>
   </div>
 
   <div class="roster-scroll">
     <table>
       <thead>
         <tr>
-          <th>Student</th>
-          <th>Student No.</th>
-          <th>Section</th>
-          <th class="right">Units %</th>
-          <th class="right">Quiz %</th>
-          <th class="right">Games %</th>
-          <th class="right">Exam Score</th>
-          <th>Status</th>
+          <th class="sortable" data-sort="fullName">Student<span class="arr">▲</span></th>
+          <th class="sortable" data-sort="studentNo">Student No.<span class="arr">▲</span></th>
+          <th class="sortable" data-sort="section">Section<span class="arr">▲</span></th>
+          <th class="sortable" data-sort="group">Group<span class="arr">▲</span></th>
+          <th class="right sortable" data-sort="units">Units %<span class="arr">▲</span></th>
+          <th class="right sortable" data-sort="quiz">Quiz %<span class="arr">▲</span></th>
+          <th class="right sortable" data-sort="games">Games %<span class="arr">▲</span></th>
+          <th class="right sortable" data-sort="examScore">Exam Score<span class="arr">▲</span></th>
+          <th class="sortable" data-sort="status">Status<span class="arr">▲</span></th>
           <th style="text-align:right;">Actions</th>
         </tr>
       </thead>
       <tbody id="rosterBody">
-        <tr><td colspan="9" class="empty">
+        <tr><td colspan="10" class="empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
           <p>Click <strong>Sync Now</strong> to load student records.</p>
         </td></tr>
@@ -584,21 +642,36 @@ td.right{text-align:right;}
 <script>
 /* =====================================================================
    Hot & Cold Assessment Mastery — Instructor Dashboard
-   Version: 3.2.0
+   Version: 3.2.1
    ===================================================================== */
 
 /* ⚠️  REPLACE with the SAME Apps Script /exec URL used elsewhere ⚠️ */
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxEEis80P0MVpRYH7L1jA0DhzEZyoRk0pfzzJuUNF67x7WgvWQODSqbKZZOXMb73vWo/exec';
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.2.1';
 const EXAM_PASS_THRESHOLD = 75;
 
 /* ---- State ---- */
 let state = {
   records: [],
   feedback: [],
-  filter: 'all',
-  search: ''
+  search: '',
+  filters: { section:'', group:'', sy:'', sem:'', status:'all' },
+  groupBy: 'section',
+  sortKey: 'fullName',
+  sortDir: 1
 };
+try{
+  const saved = JSON.parse(localStorage.getItem('hc_dash_view') || 'null');
+  if (saved){
+    Object.assign(state.filters, saved.filters || {});
+    state.groupBy = saved.groupBy || state.groupBy;
+    state.sortKey = saved.sortKey || state.sortKey;
+    state.sortDir = saved.sortDir || state.sortDir;
+  }
+}catch(e){}
+function saveView(){
+  try{ localStorage.setItem('hc_dash_view', JSON.stringify({ filters: state.filters, groupBy: state.groupBy, sortKey: state.sortKey, sortDir: state.sortDir })); }catch(e){}
+}
 
 /* ---- Utils ---- */
 const $ = id => document.getElementById(id);
@@ -751,6 +824,9 @@ function computeRow(rec){
     fullName: String(rec.fullName ?? '').trim(),
     studentNo: String(rec.studentNo ?? '').trim(),
     section: String(rec.section ?? '').trim(),
+    group: String(rec.group ?? '').trim(),
+    schoolYear: String(rec.schoolYear ?? '').trim(),
+    semester: String(rec.semester ?? '').trim(),
     email: String(rec.email ?? '').trim(),
     units, quiz, games, exam,
     examScore, examTotal, examObj,
@@ -762,13 +838,94 @@ function computeRow(rec){
   };
 }
 
-function renderAll(){
-  const rows = state.records.map(computeRow).filter(r => r.fullName || r.studentNo);
+/* ---------- Filtering / sorting ---------- */
+const natural = (a, b) => String(a).localeCompare(String(b), undefined, { numeric:true, sensitivity:'base' });
+function allRows(){
+  return state.records.map(computeRow).filter(r => r.fullName || r.studentNo || r.email);
+}
+/* Class scope = section / group / school year / semester (used by stats, chart, alerts) */
+function scopeRows(rows){
+  const f = state.filters;
+  return rows.filter(r =>
+    (!f.section || r.section === f.section) &&
+    (!f.group   || r.group   === f.group) &&
+    (!f.sy      || r.schoolYear === f.sy) &&
+    (!f.sem     || r.semester === f.sem));
+}
+function statusOf(r){ return r.exam === null ? 'Not taken' : (r.examPassed ? 'Passed' : 'Failed'); }
+function sortVal(r, k){
+  if (k === 'status') return statusOf(r);
+  if (k === 'examScore') return r.exam === null ? null : (r.examTotal ? r.examScore / r.examTotal : r.examScore);
+  return r[k];
+}
+function groupKey(r){
+  const sec = r.section || '(No section)', grp = r.group || '(No group)';
+  if (state.groupBy === 'section') return sec;
+  if (state.groupBy === 'group') return grp;
+  if (state.groupBy === 'sectiongroup') return sec + '  ›  ' + grp;
+  return '';
+}
+/* Roster = scope + status + search, arranged and sorted */
+function rosterRows(){
+  let list = scopeRows(allRows());
+  const st = state.filters.status;
+  if (st === 'passed')   list = list.filter(r => r.examPassed);
+  if (st === 'failed')   list = list.filter(r => r.exam !== null && !r.examPassed);
+  if (st === 'nottaken') list = list.filter(r => r.exam === null);
+  if (st === 'risk')     list = list.filter(r => r.atRisk);
+  if (st === 'flagged')  list = list.filter(r => r.flags > 0);
+  if (st === 'retake')   list = list.filter(r => r.examHistory.length > 0);
+  const q = state.search.toLowerCase().trim();
+  if (q) list = list.filter(r => [r.fullName, r.studentNo, r.section, r.group, r.email].some(v => (v || '').toLowerCase().includes(q)));
 
-  const total  = rows.length;
-  const taken  = rows.filter(r => r.exam !== null).length;
-  const passed = rows.filter(r => r.examPassed).length;
-  const risk   = rows.filter(r => r.atRisk).length;
+  const k = state.sortKey, dir = state.sortDir;
+  return list.sort((a, b) => {
+    if (state.groupBy !== 'none'){
+      const g = natural(groupKey(a), groupKey(b));
+      if (g) return g;
+    }
+    const va = sortVal(a, k), vb = sortVal(b, k);
+    if (va === null || va === '' || va === undefined) return (vb === null || vb === '' || vb === undefined) ? natural(a.fullName, b.fullName) : 1;
+    if (vb === null || vb === '' || vb === undefined) return -1;
+    const c = (typeof va === 'number' && typeof vb === 'number') ? va - vb : natural(va, vb);
+    return c * dir || natural(a.fullName, b.fullName);
+  });
+}
+
+function fillSelect(id, values, current, allLabel){
+  const sel = $(id);
+  const vals = [...new Set(values.filter(Boolean))].sort(natural);
+  if (current && !vals.includes(current)) vals.push(current);
+  sel.innerHTML = `<option value="">${allLabel}</option>` +
+    vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  sel.value = current || '';
+  sel.classList.toggle('on', !!current);
+}
+function populateFilters(rows){
+  const f = state.filters;
+  // each list only offers values that exist with the OTHER filters applied
+  const without = key => rows.filter(r =>
+    (key === 'section' || !f.section || r.section === f.section) &&
+    (key === 'group'   || !f.group   || r.group === f.group) &&
+    (key === 'sy'      || !f.sy      || r.schoolYear === f.sy) &&
+    (key === 'sem'     || !f.sem     || r.semester === f.sem));
+  fillSelect('fSection', without('section').map(r => r.section), f.section, 'All sections');
+  fillSelect('fGroup',   without('group').map(r => r.group),     f.group,   'All groups');
+  fillSelect('fSY',      without('sy').map(r => r.schoolYear),   f.sy,      'All school years');
+  fillSelect('fSem',     without('sem').map(r => r.semester),    f.sem,     'All semesters');
+  $('fStatus').value = f.status; $('fStatus').classList.toggle('on', f.status !== 'all');
+  $('fGroupBy').value = state.groupBy;
+}
+
+function renderAll(){
+  const rows = allRows();
+  populateFilters(rows);
+  const scope = scopeRows(rows);
+
+  const total  = scope.length;
+  const taken  = scope.filter(r => r.exam !== null).length;
+  const passed = scope.filter(r => r.examPassed).length;
+  const risk   = scope.filter(r => r.atRisk).length;
 
   $('sTotal').textContent  = total;
   $('sTaken').textContent  = taken;
@@ -779,9 +936,15 @@ function renderAll(){
   $('chipAlerts').textContent = risk + ' alert' + (risk!==1?'s':'');
   $('chipFb').textContent = state.feedback.length + ' feedback';
 
-  renderChart(rows);
-  renderAlerts(rows);
-  renderRoster(rows);
+  const f = state.filters;
+  const scopeParts = [f.section, f.group, f.sy, f.sem].filter(Boolean);
+  $('scopeNote').innerHTML = scopeParts.length
+    ? `Showing summary for <strong>${esc(scopeParts.join(' · '))}</strong> (${total} of ${rows.length} students).`
+    : `Showing summary for <strong>all classes</strong> (${rows.length} students). Use the roster filters to focus on one section or group.`;
+
+  renderChart(scope);
+  renderAlerts(scope);
+  renderRoster();
   renderFeedback();
 }
 
@@ -807,7 +970,7 @@ function renderChart(rows){
         <div class="lbl">${esc(d.label)}</div>
       </div>`;
   }).join('') + `
-    <div class="guide" style="bottom:25%;"><span>75%</span></div>
+    <div class="guide" style="bottom:75%;"><span>75%</span></div>
     <div class="guide" style="bottom:50%;"><span>50%</span></div>`;
 }
 
@@ -844,54 +1007,55 @@ function renderAlerts(rows){
   });
 }
 
-function renderRoster(rows){
-  let list = rows;
-  if (state.filter === 'risk')   list = list.filter(r => r.atRisk);
-  if (state.filter === 'passed') list = list.filter(r => r.examPassed);
+function renderRoster(){
+  const list = rosterRows();
+  const scopeTotal = scopeRows(allRows()).length;
 
-  const q = state.search.toLowerCase().trim();
-  if (q){
-    list = list.filter(r =>
-      (r.fullName||'').toLowerCase().includes(q) ||
-      (r.studentNo||'').toLowerCase().includes(q) ||
-      (r.section||'').toLowerCase().includes(q) ||
-      (r.email||'').toLowerCase().includes(q)
-    );
-  }
+  document.querySelectorAll('thead th.sortable').forEach(th => {
+    const on = th.dataset.sort === state.sortKey;
+    th.classList.toggle('sorted', on);
+    th.querySelector('.arr').textContent = on && state.sortDir < 0 ? '▼' : '▲';
+  });
+
+  const shownExam = list.filter(r => r.exam !== null);
+  $('rosterCount').innerHTML = `Showing <strong>${list.length}</strong> of ${scopeTotal} student${scopeTotal !== 1 ? 's' : ''}` +
+    (shownExam.length ? ` · ${shownExam.filter(r => r.examPassed).length}/${shownExam.length} passed the exam` : '');
 
   const body = $('rosterBody');
   if (!list.length){
-    body.innerHTML = `<tr><td colspan="9" class="empty">
+    body.innerHTML = `<tr><td colspan="10" class="empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <p>${state.records.length ? 'No matching students.' : 'Click <strong>Sync Now</strong> to load records.'}</p>
+      <p>${state.records.length ? 'No students match these filters.' : 'Click <strong>Sync Now</strong> to load records.'}</p>
     </td></tr>`;
     return;
   }
 
-  body.innerHTML = list.map(r => {
+  const rowHtml = r => {
     const statusBadge = r.examPassed
       ? '<span class="badge-pill ok">Passed</span>'
       : r.exam !== null
         ? '<span class="badge-pill bad">Failed</span>'
         : '<span class="badge-pill neutral">Not taken</span>';
     const flags = r.flags > 0 ? `<span class="badge-pill warn" title="Integrity flags">⚠ ${r.flags}</span>` : '';
-
+    const retake = r.examHistory.length ? `<span class="badge-pill neutral" title="Exam attempts">${r.examHistory.length + (r.examObj ? 1 : 0)} attempts</span>` : '';
+    const canPrint = r.exam !== null;
     return `
       <tr class="${r.atRisk ? 'at-risk' : ''}">
         <td class="name">${esc(r.fullName) || '—'}</td>
         <td class="mono">${esc(r.studentNo) || '—'}</td>
         <td>${esc(r.section) || '—'}</td>
+        <td>${esc(r.group) || '—'}</td>
         <td class="right">${fmt(r.units,'%')}</td>
         <td class="right">${fmt(r.quiz,'%')}</td>
         <td class="right">${fmt(r.games,'%')}</td>
         <td class="right" style="white-space:nowrap;">${r.exam === null ? '—' : `<strong>${scoreText(r.examScore, r.examTotal)}</strong> <span style="color:var(--muted);font-size:12px;">(${fmt(r.exam,'%')})</span>`}</td>
-        <td>${statusBadge} ${flags}</td>
+        <td>${statusBadge} ${flags} ${retake}</td>
         <td>
           <div class="row-actions">
             <button class="icon-btn" data-view-student="${r.id}" title="View details">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-            <button class="icon-btn" data-print-exam="${r.id}" title="Print answered exam" ${r.examObj && Array.isArray(r.examObj.answers) && r.examObj.answers.length ? '' : 'disabled title="No recorded answers (exam not taken, or taken on an older app version)" style="opacity:.35;cursor:not-allowed;"'}>
+            <button class="icon-btn" data-print-exam="${r.id}" title="${canPrint ? 'Print exam' : 'Exam not yet taken'}" ${canPrint ? '' : 'disabled style="opacity:.35;cursor:not-allowed;"'}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             </button>
             <button class="icon-btn" data-retake="${r.id}" title="Issue retake code">
@@ -900,11 +1064,40 @@ function renderRoster(rows){
           </div>
         </td>
       </tr>`;
-  }).join('');
+  };
+
+  let html = '';
+  if (state.groupBy === 'none'){
+    html = list.map(rowHtml).join('');
+  } else {
+    let cur = null, bucket = [];
+    const flush = () => {
+      if (!bucket.length) return;
+      const ex = bucket.filter(r => r.exam !== null);
+      const pass = ex.filter(r => r.examPassed).length;
+      const avgPct = ex.length ? ex.reduce((s, r) => s + r.exam, 0) / ex.length : null;
+      const totals = [...new Set(ex.map(r => r.examTotal).filter(v => v !== null))];
+      const avgScore = ex.length && totals.length === 1 ? (ex.reduce((s, r) => s + (r.examScore || 0), 0) / ex.length).toFixed(1) + '/' + totals[0] : null;
+      html += `<tr class="grp"><td colspan="10"><strong>${esc(cur)}</strong>
+        <span class="gstat">${bucket.length} student${bucket.length !== 1 ? 's' : ''}</span>
+        <span class="gstat">Exam taken: ${ex.length}</span>
+        <span class="gstat">Passed: ${pass}${ex.length ? ' (' + Math.round(pass / ex.length * 100) + '%)' : ''}</span>
+        ${avgPct !== null ? `<span class="gstat">Avg exam: ${avgScore ? avgScore + ' · ' : ''}${Math.round(avgPct)}%</span>` : ''}
+        ${bucket.filter(r => r.atRisk).length ? `<span class="gstat" style="color:var(--warn);">At risk: ${bucket.filter(r => r.atRisk).length}</span>` : ''}
+      </td></tr>` + bucket.map(rowHtml).join('');
+    };
+    list.forEach(r => {
+      const g = groupKey(r);
+      if (g !== cur){ flush(); cur = g; bucket = []; }
+      bucket.push(r);
+    });
+    flush();
+  }
+  body.innerHTML = html;
 
   body.querySelectorAll('[data-view-student]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const r = rows.find(x => String(x.id) === btn.dataset.viewStudent);
+      const r = list.find(x => String(x.id) === btn.dataset.viewStudent);
       if (r) openStudentModal(r);
     });
   });
@@ -914,8 +1107,8 @@ function renderRoster(rows){
   body.querySelectorAll('[data-print-exam]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
-      const r = rows.find(x => String(x.id) === btn.dataset.printExam);
-      if (r) printExams([{ row: r, exam: r.examObj }]);
+      const r = list.find(x => String(x.id) === btn.dataset.printExam);
+      if (r) printExams([{ row: r, exam: printable(r, r.examObj) }]);
     });
   });
 }
@@ -988,8 +1181,8 @@ function openStudentModal(r){
   `);
   $('modalBox').querySelectorAll('[data-print-attempt]').forEach(b => b.addEventListener('click', () => {
     const idx = b.dataset.printAttempt;
-    const ex = idx === 'latest' ? r.examObj : r.examHistory[Number(idx)];
-    printExams([{ row: r, exam: ex }]);
+    const ex = idx === 'latest' ? (r.examObj || null) : r.examHistory[Number(idx)];
+    printExams([{ row: r, exam: printable(r, ex) }]);
   }));
   $('modalBox').querySelector('[data-modal-close]')?.addEventListener('click', closeModal);
   $('modalBox').querySelector('[data-retake-modal]')?.addEventListener('click', (e) => {
@@ -1040,24 +1233,51 @@ async function issueRetake(rowId){
    Each submitted exam carries the items, the key and the student's choice,
    so the printout shows exactly what the student saw and answered.
    ===================================================================== */
+/* Exams taken on v3.1.x saved only the score. The items were the same
+   fixed 30-item bank in the same order, so the actual exam can still be
+   printed with the key and the score — only the student's choices are unknown. */
+function hasAnswers(ex){ return !!(ex && Array.isArray(ex.answers) && ex.answers.length); }
+function legacyExam(r, base){
+  const bank = window.HC_EXAM_BANK || [];
+  const src = base || r.examObj || {};
+  const score = typeof src.score === 'number' ? src.score : r.examScore;
+  const total = typeof src.total === 'number' ? src.total : r.examTotal;
+  if (score === null || score === undefined || !bank.length) return null;
+  return {
+    legacy: true,
+    attempt: src.attempt || 1,
+    score, total: total || bank.length,
+    pct: typeof src.pct === 'number' ? src.pct : (r.exam !== null ? Math.round(r.exam) : Math.round(score / (total || bank.length) * 100)),
+    passed: typeof src.passed === 'boolean' ? src.passed : r.examPassed,
+    takenAt: src.takenAt || r.raw.timestamp || '',
+    durationSec: src.durationSec,
+    integrityFlags: src.integrityFlags != null ? src.integrityFlags : r.flags,
+    bankMismatch: !!(total && total !== bank.length),
+    answers: bank.map((q, i) => ({ n: i + 1, q: q.q, opts: q.opts, key: q.a, selected: null, correct: null }))
+  };
+}
+function printable(r, ex){ return hasAnswers(ex) ? ex : legacyExam(r, ex); }
+
 function examAttemptsHtml(r){
   const items = [];
   r.examHistory.forEach((ex, i) => items.push({ ex, idx: String(i), label: 'Attempt ' + (ex.attempt || i + 1) }));
+  if (!r.examObj && r.exam !== null) items.push({ ex: legacyExam(r) || {}, idx: 'latest', label: 'Capstone exam' });
   if (r.examObj) items.push({ ex: r.examObj, idx: 'latest', label: (r.examHistory.length ? 'Attempt ' + (r.examObj.attempt || r.examHistory.length + 1) + ' (latest)' : 'Capstone exam') });
   if (!items.length) return '';
   return `
     <div style="padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Exam attempts</div>
       ${items.map(it => {
-        const has = Array.isArray(it.ex.answers) && it.ex.answers.length;
+        const has = hasAnswers(it.ex) && !it.ex.legacy;
         return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--border);">
           <div style="font-size:13px;">
             <strong>${esc(it.label)}</strong> — ${esc(it.ex.score)}/${esc(it.ex.total)} (${esc(it.ex.pct)}%) ${it.ex.passed ? '· PASSED' : '· FAILED'}
             ${it.ex.takenAt ? `<div style="font-size:11.5px;color:var(--muted);">${esc(new Date(it.ex.takenAt).toLocaleString())}${it.ex.integrityFlags ? ' · ⚠ ' + esc(it.ex.integrityFlags) + ' integrity flag(s)' : ''}</div>` : ''}
           </div>
-          ${has
-            ? `<button class="btn sm ripple" data-print-attempt="${it.idx}">Print Exam</button>`
-            : `<span style="font-size:11.5px;color:var(--muted);text-align:right;">Answers not recorded<br>(taken on an older app version)</span>`}
+          <div style="text-align:right;">
+            <button class="btn sm ripple" data-print-attempt="${it.idx}">Print Exam</button>
+            ${has ? '' : `<div style="font-size:10.5px;color:var(--muted);margin-top:3px;">Older version: prints items, key &amp; score<br>(student's choices were not saved)</div>`}
+          </div>
         </div>`;
       }).join('')}
     </div>`;
@@ -1071,7 +1291,8 @@ function fmtDuration(sec){
 
 function examPrintBody(row, ex){
   const answers = (ex && Array.isArray(ex.answers)) ? ex.answers : [];
-  const wrong = answers.filter(a => !a.correct).map(a => a.n);
+  const legacy = !!ex.legacy;
+  const wrong = answers.filter(a => a.correct === false).map(a => a.n);
   const L = 'ABCDEFGH';
   return `
   <section class="paper">
@@ -1096,13 +1317,19 @@ function examPrintBody(row, ex){
       <div><span class="big">${ex.passed ? 'PASSED' : 'FAILED'}</span><span class="lbl">REMARKS (passing ${EXAM_PASS_THRESHOLD}%)</span></div>
       <div><span class="big">${esc(ex.integrityFlags || 0)}</span><span class="lbl">INTEGRITY FLAGS</span></div>
     </div>
+    ${legacy ? `
+    <p class="legacy-note"><b>Note:</b> This exam was taken on an older version of the app (v3.1) that saved only the score.
+      The items below are the exact 30-item exam the student took, with the correct answers marked.
+      The student's individual choices were not recorded, so items are not marked right or wrong.
+      ${ex.bankMismatch ? '<br><b>Warning:</b> the recorded total (' + esc(ex.total) + ' items) does not match the current exam bank.' : ''}</p>
+    <p class="legend"><span class="k key">KEY</span> correct answer</p>` : `
     <p class="wrongline"><b>Items answered incorrectly (${wrong.length}):</b> ${wrong.length ? wrong.join(', ') : 'None'}</p>
-    <p class="legend"><span class="k ok">✓</span> student's correct answer &nbsp; <span class="k bad">✗</span> student's wrong answer &nbsp; <span class="k key">KEY</span> correct answer</p>
+    <p class="legend"><span class="k ok">✓</span> student's correct answer &nbsp; <span class="k bad">✗</span> student's wrong answer &nbsp; <span class="k key">KEY</span> correct answer</p>`}
 
     <ol class="items">
       ${answers.map(a => `
-        <li class="item ${a.correct ? 'is-ok' : 'is-bad'}">
-          <div class="stem"><span class="no">${esc(a.n)}.</span> ${esc(a.q)} <span class="mark ${a.correct ? 'ok' : 'bad'}">${a.correct ? '✓ Correct' : '✗ Wrong'}</span></div>
+        <li class="item ${a.correct === null ? '' : a.correct ? 'is-ok' : 'is-bad'}">
+          <div class="stem"><span class="no">${esc(a.n)}.</span> ${esc(a.q)} ${a.correct === null ? '' : `<span class="mark ${a.correct ? 'ok' : 'bad'}">${a.correct ? '✓ Correct' : '✗ Wrong'}</span>`}</div>
           <div class="opts">
             ${(a.opts || []).map((o, i) => {
               const isSel = i === a.selected, isKey = i === a.key;
@@ -1124,9 +1351,9 @@ function examPrintBody(row, ex){
 }
 
 function printExams(list){
-  const valid = list.filter(x => x.exam && Array.isArray(x.exam.answers) && x.exam.answers.length);
+  const valid = list.filter(x => hasAnswers(x.exam));
   if (!valid.length){
-    toast('No recorded exam answers to print. Students must take the exam on app v3.2.0 or later.', 'err', 5000);
+    toast('Nothing to print — no exam records found.', 'err', 5000);
     return;
   }
   const title = valid.length === 1
@@ -1153,6 +1380,7 @@ function printExams(list){
     .scorebox .lbl{display:block;font-size:8pt;color:#555;letter-spacing:.05em;}
     .scorebox.pass .big{color:#126b3a;} .scorebox.fail div:nth-child(3) .big{color:#b42318;}
     .wrongline{margin:6px 0 2px;font-size:10.5pt;}
+    .legacy-note{margin:6px 0 4px;font-size:9.5pt;line-height:1.4;padding:6px 8px;border:1px dashed #999;border-radius:4px;background:#fafafa;}
     .legend{font-size:9.5pt;color:#444;margin:2px 0 10px;}
     .k{display:inline-block;padding:0 5px;border-radius:3px;font-weight:700;}
     .k.ok{background:#d9f2e3;color:#126b3a;} .k.bad{background:#fde2e0;color:#b42318;} .k.key{background:#fff1c2;color:#7a5600;}
@@ -1293,14 +1521,9 @@ const PAPER_SIZES = [
 
 $('btnPrintExams').addEventListener('click', () => {
   if (!state.records.length){ toast('Sync first to load student records.', 'err'); return; }
-  // print the students currently shown in the roster (respects search and filter)
-  let rows = state.records.map(computeRow).filter(r => r.fullName || r.studentNo);
-  if (state.filter === 'risk')   rows = rows.filter(r => r.atRisk);
-  if (state.filter === 'passed') rows = rows.filter(r => r.examPassed);
-  const q = state.search.toLowerCase().trim();
-  if (q) rows = rows.filter(r => [r.fullName, r.studentNo, r.section, r.email].some(v => (v||'').toLowerCase().includes(q)));
-  rows.sort((a,b) => (a.section||'').localeCompare(b.section||'') || (a.fullName||'').localeCompare(b.fullName||''));
-  printExams(rows.map(r => ({ row: r, exam: r.examObj })));
+  const rows = rosterRows().filter(r => r.exam !== null);
+  if (!rows.length){ toast('No students in the current list have taken the exam.', 'err'); return; }
+  printExams(rows.map(r => ({ row: r, exam: printable(r, r.examObj) })));
 });
 
 let qrScanner = null;
@@ -1400,10 +1623,11 @@ async function handleScan(text){
 
 $('btnCSV').addEventListener('click', () => {
   if (!state.records.length){ toast('Nothing to export.', 'err'); return; }
-  const rows = state.records.map(computeRow);
-  const cols = ['Student','StudentNo','Section','Email','Units%','Quiz%','Games%','ExamScore','ExamItems','Exam%','ExamStatus','Flags','Code','Timestamp'];
+  const rows = rosterRows();
+  if (!rows.length){ toast('No students match the current filters.', 'err'); return; }
+  const cols = ['Student','StudentNo','Section','Group','SchoolYear','Semester','Email','Units%','Quiz%','Games%','ExamScore','ExamItems','Exam%','ExamStatus','Flags','Code','Timestamp'];
   const csv = [cols, ...rows.map(r => [
-    r.fullName, r.studentNo, r.section, r.email,
+    r.fullName, r.studentNo, r.section, r.group, r.schoolYear, r.semester, r.email,
     r.units ?? '', r.quiz ?? '', r.games ?? '', r.examScore ?? '', r.examTotal ?? '', r.exam ?? '',
     r.examPassed ? 'PASSED' : (r.exam !== null ? 'FAILED' : 'NOT TAKEN'),
     r.flags, r.raw.code || '', r.raw.timestamp || ''
@@ -1428,18 +1652,23 @@ $('btnPrint').addEventListener('click', () => window.print());
 
 $('searchInput').addEventListener('input', (e) => {
   state.search = e.target.value;
-  renderRoster(state.records.map(computeRow));
+  renderRoster();
 });
-function setFilter(f){
-  state.filter = f;
-  [['all','btnFilterAll'],['risk','btnFilterRisk'],['passed','btnFilterPassed']]
-    .forEach(([k,id]) => $(id).classList.toggle('primary', k === f));
-  renderRoster(state.records.map(computeRow));
-}
-$('btnFilterAll').addEventListener('click', () => setFilter('all'));
-$('btnFilterRisk').addEventListener('click', () => setFilter('risk'));
-$('btnFilterPassed').addEventListener('click', () => setFilter('passed'));
-$('btnFilterAll').classList.add('primary');
+[['fSection','section'],['fGroup','group'],['fSY','sy'],['fSem','sem'],['fStatus','status']].forEach(([id, key]) => {
+  $(id).addEventListener('change', e => { state.filters[key] = e.target.value; saveView(); renderAll(); });
+});
+$('fGroupBy').addEventListener('change', e => { state.groupBy = e.target.value; saveView(); renderRoster(); });
+$('btnClearFilters').addEventListener('click', () => {
+  state.filters = { section:'', group:'', sy:'', sem:'', status:'all' };
+  state.search = ''; $('searchInput').value = '';
+  saveView(); renderAll();
+});
+document.querySelectorAll('thead th.sortable').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.sort;
+  if (state.sortKey === k) state.sortDir *= -1; else { state.sortKey = k; state.sortDir = 1; }
+  saveView(); renderRoster();
+}));
+
 
 $('btnSync').addEventListener('click', fetchAll);
 
