@@ -79,3 +79,9 @@ Exams taken on v3.1.x did not save the answers, so those can't be printed item b
 - The exam items now live in `exam-bank.js`, shared by the student app and the dashboard.
   Edit questions there only, and keep the order of items that students already answered.
 - Fixed the Class Analytics chart: the 50% and 75% guide lines were swapped.
+- **Not Yet Taken: Capstone Exam** card on the Instructor Dashboard. Lists, per section and per group,
+  the students who have not finished the exam, with a progress bar per section ("4/6 done").
+  Students who opened the exam but did not finish are marked "started, not finished".
+  Follows the Section / Group / School Year / Semester filters. Buttons: **Show in roster**,
+  **Copy list** (ready to paste in the class GC), **Print list** (with paper size and CI signature).
+  Only students who registered in the app appear; a student who never opened the app is not in the records.

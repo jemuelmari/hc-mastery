@@ -342,6 +342,39 @@ td.right{text-align:right;}
 
 /* ============ ALERTS ============ */
 .alert-list{display:grid;gap:10px;}
+
+/* ============ PENDING EXAM TRACKER ============ */
+.pend-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px;}
+.pend-head .spacer{flex:1;}
+.pend-total{font-size:13px;color:var(--muted);}
+.pend-total strong{font-size:22px;color:var(--warn);margin-right:4px;}
+.pend-sec{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;background:rgba(255,255,255,0.02);}
+.pend-sec > summary{
+  list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;
+  padding:12px 14px;
+}
+.pend-sec > summary::-webkit-details-marker{display:none;}
+.pend-sec > summary .nm{font-weight:800;font-size:14px;}
+.pend-sec > summary .nm::before{content:'▸';display:inline-block;width:14px;color:var(--muted);transition:transform .15s;}
+.pend-sec[open] > summary .nm::before{transform:rotate(90deg);}
+.pend-sec > summary .ct{font-size:12.5px;color:var(--muted);text-align:right;white-space:nowrap;}
+.pend-sec > summary .ct b{color:var(--warn);}
+.pend-sec > summary .ct b.done{color:var(--ok);}
+.pend-bar{grid-column:1 / -1;height:6px;border-radius:99px;background:rgba(255,255,255,0.06);overflow:hidden;}
+.pend-bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--ok),var(--cold));border-radius:99px;}
+.pend-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:0 14px 14px;}
+.pend-grp{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:rgba(0,0,0,0.12);}
+.pend-grp h5{margin:0 0 6px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;}
+.pend-grp h5 span{color:var(--muted);font-weight:700;text-transform:none;letter-spacing:0;}
+.pend-grp.done h5 span{color:var(--ok);}
+.pend-name{
+  display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;
+  padding:5px 6px;border-radius:8px;font-size:13px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;
+}
+.pend-name:hover{background:rgba(255,255,255,0.05);}
+.pend-name small{color:var(--muted);font-size:11.5px;white-space:nowrap;}
+.pend-name small.prog{color:var(--cold);}
+.pend-empty{font-size:12.5px;color:var(--ok);padding:2px 6px;}
 .alert{
   display:flex;align-items:center;gap:12px;
   padding:12px 14px;border-radius:var(--radius);
@@ -548,6 +581,25 @@ td.right{text-align:right;}
       </div>
     </div>
   </div>
+</div>
+
+<!-- ============= PENDING CAPSTONE EXAM ============= -->
+<div class="card" id="pendingCard">
+  <h3><span class="ico warn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+  </span>Not Yet Taken: Capstone Exam</h3>
+  <p class="sub">Students who have not finished the capstone exam, by section and group. Follows the Section / Group / School Year / Semester filters below. Click a name for details.</p>
+  <div class="pend-head">
+    <div class="pend-total" id="pendTotal">—</div>
+    <span class="spacer"></span>
+    <label style="font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center;cursor:pointer;">
+      <input type="checkbox" id="pendShowDone" /> Show completed groups
+    </label>
+    <button class="btn sm ripple" id="btnPendRoster">Show in roster</button>
+    <button class="btn sm ripple" id="btnPendCopy">Copy list</button>
+    <button class="btn sm ripple" id="btnPendPrint">Print list</button>
+  </div>
+  <div id="pendList"><div class="empty" style="padding:20px;"><p style="font-size:13px;">Sync to load records.</p></div></div>
 </div>
 
 <!-- ============= ROSTER ============= -->
@@ -832,6 +884,7 @@ function computeRow(rec){
     examScore, examTotal, examObj,
     examHistory: Array.isArray(data.examHistory) ? data.examHistory : [],
     ci: String(data.clinicalInstructor || '').trim(),
+    inProgress: exam === null && data.examInProgress ? data.examInProgress : null,
     examPassed,
     flags,
     atRisk, reasons
@@ -917,6 +970,162 @@ function populateFilters(rows){
   $('fGroupBy').value = state.groupBy;
 }
 
+/* ---------- Pending capstone exam tracker ---------- */
+function pendingStructure(scope){
+  const secs = new Map();
+  scope.forEach(r => {
+    const sec = r.section || '(No section)', grp = r.group || '(No group)';
+    if (!secs.has(sec)) secs.set(sec, new Map());
+    const g = secs.get(sec);
+    if (!g.has(grp)) g.set(grp, { all: [], pending: [] });
+    const b = g.get(grp);
+    b.all.push(r);
+    if (r.exam === null) b.pending.push(r);
+  });
+  return [...secs.entries()].sort((a, b) => natural(a[0], b[0])).map(([sec, g]) => {
+    const groups = [...g.entries()].sort((a, b) => natural(a[0], b[0])).map(([grp, b]) => ({
+      grp, total: b.all.length,
+      pending: b.pending.sort((x, y) => natural(x.fullName, y.fullName))
+    }));
+    const total = groups.reduce((s, x) => s + x.total, 0);
+    const pending = groups.reduce((s, x) => s + x.pending.length, 0);
+    return { sec, groups, total, pending };
+  });
+}
+
+function renderPending(scope){
+  const data = pendingStructure(scope);
+  const total = scope.length;
+  const pending = data.reduce((s, x) => s + x.pending, 0);
+  const showDone = $('pendShowDone').checked;
+  $('pendTotal').innerHTML = total
+    ? `<strong>${pending}</strong> of ${total} student${total !== 1 ? 's' : ''} have not taken the exam` + (pending === 0 ? ' 🎉' : '')
+    : 'No students in the current filters.';
+  const list = $('pendList');
+  if (!total){ list.innerHTML = ''; return; }
+  if (!pending && !showDone){
+    list.innerHTML = `<div class="empty" style="padding:16px;"><p style="font-size:13px;">Everyone in the current filters has taken the capstone exam. 🎉</p></div>`;
+    return;
+  }
+  list.innerHTML = data.filter(d => showDone || d.pending).map(d => {
+    const donePct = d.total ? Math.round((d.total - d.pending) / d.total * 100) : 0;
+    const groups = d.groups.filter(g => showDone || g.pending.length);
+    return `
+    <details class="pend-sec" ${d.pending ? 'open' : ''}>
+      <summary>
+        <span class="nm">${esc(d.sec)}</span>
+        <span class="ct"><b class="${d.pending ? '' : 'done'}">${d.pending} not taken</b> · ${d.total - d.pending}/${d.total} done (${donePct}%)</span>
+        <div class="pend-bar"><span style="width:${donePct}%"></span></div>
+      </summary>
+      <div class="pend-groups">
+        ${groups.map(g => `
+          <div class="pend-grp ${g.pending.length ? '' : 'done'}">
+            <h5>${esc(g.grp)} <span>${g.pending.length ? g.pending.length + ' of ' + g.total + ' pending' : 'All ' + g.total + ' done ✓'}</span></h5>
+            ${g.pending.length ? g.pending.map(r => `
+              <button class="pend-name" data-pend="${r.id}">
+                <span>${esc(r.fullName || r.studentNo || r.email)}</span>
+                ${r.inProgress ? '<small class="prog">started, not finished</small>' : `<small>${esc(r.studentNo)}</small>`}
+              </button>`).join('') : '<div class="pend-empty">Everyone in this group has taken the exam.</div>'}
+          </div>`).join('')}
+      </div>
+    </details>`;
+  }).join('');
+  list.querySelectorAll('[data-pend]').forEach(b => b.addEventListener('click', () => {
+    const r = scope.find(x => String(x.id) === b.dataset.pend);
+    if (r) openStudentModal(r);
+  }));
+}
+
+function pendingText(){
+  const scope = scopeRows(allRows());
+  const f = state.filters;
+  const head = ['Not yet taken: Capstone Exam — Hot & Cold Application (NCM 104)',
+    [f.section, f.group, f.sy, f.sem].filter(Boolean).join(' · ')].filter(Boolean);
+  const lines = [...head, ''];
+  pendingStructure(scope).filter(d => d.pending).forEach(d => {
+    lines.push(`${d.sec} (${d.pending} of ${d.total})`);
+    d.groups.filter(g => g.pending.length).forEach(g => {
+      lines.push(`  ${g.grp}:`);
+      g.pending.forEach((r, i) => lines.push(`    ${i + 1}. ${r.fullName || r.studentNo}${r.inProgress ? ' (started, not finished)' : ''}`));
+    });
+    lines.push('');
+  });
+  return lines.join('\n').trim();
+}
+
+$('pendShowDone').addEventListener('change', () => renderPending(scopeRows(allRows())));
+$('btnPendRoster').addEventListener('click', () => {
+  state.filters.status = 'nottaken'; saveView(); renderAll();
+  document.querySelector('#searchInput').scrollIntoView({ behavior:'smooth', block:'start' });
+});
+$('btnPendCopy').addEventListener('click', async () => {
+  if (!state.records.length){ toast('Sync first.', 'err'); return; }
+  const txt = pendingText();
+  try{ await navigator.clipboard.writeText(txt); toast('List copied. Paste it in your class GC.', 'ok'); }
+  catch(e){
+    openModal(`<h3>Copy this list</h3><textarea style="width:100%;height:260px;background:rgba(0,0,0,.25);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px;font-family:inherit;font-size:13px;">${esc(txt)}</textarea>
+      <div class="modal-actions"><button class="btn ripple" data-modal-close>Close</button></div>`);
+    $('modalBox').querySelector('[data-modal-close]').addEventListener('click', closeModal);
+  }
+});
+$('btnPendPrint').addEventListener('click', () => {
+  if (!state.records.length){ toast('Sync first.', 'err'); return; }
+  const scope = scopeRows(allRows());
+  const data = pendingStructure(scope).filter(d => d.pending);
+  if (!data.length){ toast('Everyone in the current filters has taken the exam.', 'ok'); return; }
+  const f = state.filters;
+  const ci = getCI();
+  const sub = [f.section, f.group, f.sy, f.sem].filter(Boolean).join(' · ') || 'All sections';
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Not yet taken - Capstone Exam</title>
+  <style>
+    @page{size:8.5in 13in;margin:0.6in;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:11pt;margin:0;}
+    .lh{text-align:center;border-bottom:2px solid #444;padding-bottom:8px;margin-bottom:12px;}
+    .lh div{font-size:11pt;} .lh .b{font-weight:700;} .lh .t{font-weight:700;font-size:12pt;margin-top:8px;text-decoration:underline;}
+    h2{font-size:12pt;margin:14px 0 4px;border-bottom:1px solid #999;padding-bottom:3px;}
+    h3{font-size:10.5pt;margin:8px 0 3px;}
+    table{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:6px;table-layout:fixed;}
+    th,td{border:1px solid #888;padding:4px 6px;text-align:left;}
+    th{background:#eee;} th:nth-child(1){width:6%;} th:nth-child(2){width:46%;} th:nth-child(3){width:22%;} td.n{text-align:center;}
+    .meta{font-size:10pt;color:#333;}
+    .sign{margin-top:36px;width:280px;margin-left:auto;text-align:center;font-size:10pt;}
+    .sign .line{border-top:1px solid #333;margin-bottom:4px;}
+    .toolbar{position:sticky;top:0;background:#f4f4f4;border-bottom:1px solid #ddd;padding:8px 12px;display:flex;gap:8px;align-items:center;font-size:13px;}
+    @media screen{body{background:#e9e9e9;} .paper{background:#fff;max-width:8.5in;margin:14px auto;padding:0.5in 0.6in;}}
+    @media print{.toolbar{display:none;}}
+  </style><style id="pageSize"></style></head><body>
+  <div class="toolbar"><b>Paper size:</b> <select id="paper">${PAPER_SIZES.map(p => `<option value="${p.id}">${p.label}</option>`).join('')}</select>
+    <button onclick="window.print()">🖨 Print</button></div>
+  <div class="paper">
+    <div class="lh"><div>Republic of the Philippines</div><div class="b">TARLAC STATE UNIVERSITY</div>
+      <div class="b">COLLEGE OF SCIENCE · Department of Nursing</div>
+      <div class="b" style="margin-top:6px;">NCM 104 (COMMUNITY HEALTH NURSING 1) · HOT &amp; COLD APPLICATION / HOT SITZ BATH</div>
+      <div class="t">Students Who Have Not Yet Taken the Capstone Exam</div></div>
+    <p class="meta"><b>Coverage:</b> ${esc(sub)} &nbsp;·&nbsp; <b>As of:</b> ${esc(new Date().toLocaleString())} &nbsp;·&nbsp;
+      <b>Total pending:</b> ${data.reduce((s, d) => s + d.pending, 0)} of ${scope.length}</p>
+    ${data.map(d => `
+      <h2>${esc(d.sec)} — ${d.pending} of ${d.total} not yet taken</h2>
+      ${d.groups.filter(g => g.pending.length).map(g => `
+        <h3>${esc(g.grp)} (${g.pending.length} of ${g.total})</h3>
+        <table><tr><th>#</th><th>Name</th><th>Student No.</th><th>Remarks</th></tr>
+          ${g.pending.map((r, i) => `<tr><td class="n">${i + 1}</td><td>${esc(r.fullName)}</td><td class="c">${esc(r.studentNo)}</td><td>${r.inProgress ? 'Started, not finished' : ''}</td></tr>`).join('')}
+        </table>`).join('')}`).join('')}
+    <div class="sign"><div class="line"></div>${esc(ci.name || '')}<br><span style="color:#555;">${esc(ci.title || 'Clinical Instructor')}</span></div>
+  </div></body></html>`;
+  const w = window.open('', '_blank');
+  if (!w){ toast('Pop-up blocked. Please allow pop-ups for this site.', 'err', 5000); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  const doc = w.document, sel = doc.getElementById('paper');
+  let saved = 'long'; try{ saved = localStorage.getItem('hc_print_paper') || 'long'; }catch(e){}
+  sel.value = PAPER_SIZES.some(p => p.id === saved) ? saved : 'long';
+  const apply = () => {
+    const p = PAPER_SIZES.find(x => x.id === sel.value) || PAPER_SIZES[0];
+    doc.getElementById('pageSize').textContent = `@page{size:${p.w} ${p.h};margin:${p.m};}`;
+    try{ localStorage.setItem('hc_print_paper', p.id); }catch(e){}
+  };
+  sel.addEventListener('change', apply); apply(); w.focus();
+});
+
 function renderAll(){
   const rows = allRows();
   populateFilters(rows);
@@ -944,6 +1153,7 @@ function renderAll(){
 
   renderChart(scope);
   renderAlerts(scope);
+  renderPending(scope);
   renderRoster();
   renderFeedback();
 }
